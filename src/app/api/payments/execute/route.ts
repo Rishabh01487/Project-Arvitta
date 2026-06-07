@@ -32,3 +32,18 @@ export async function POST(request: NextRequest) {
           error: 'Each payment must have supplierId, amount (min ₹1), and method (UPI/NEFT/RTGS/IMPS)',
         }, { status: 400 })
       }
+    }
+
+    // Execute batch
+    const result = await executeBatchPayout(businessId, payments)
+
+    return NextResponse.json({
+      success: true,
+      ...result,
+    })
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Batch payment failed'
+    console.error('Payment execute error:', error)
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
+}
