@@ -138,3 +138,36 @@ export function AppShell() {
               <p className="text-[10px] truncate" style={{ color: 'var(--color-av-gray-dim)' }}>{business?.email}</p>
             </div>
             <button onClick={logout} className="p-2 rounded-lg" style={{ color: 'var(--color-av-gray-dim)' }}
+              onMouseOver={e => (e.currentTarget.style.color = 'var(--color-av-danger)')}
+              onMouseOut={e => (e.currentTarget.style.color = 'var(--color-av-gray-dim)')}>✕</button>
+          </div>
+        </div>
+      </aside>
+
+      {/* ═══ Main ═══ */}
+      <main className="flex-1 min-h-screen relative" style={{ zIndex: 1 }}>
+        <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-5 py-4"
+          style={{ background: 'rgba(7,11,26,0.6)', backdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+          <button onClick={() => setSidebarOpen(true)} style={{ color: 'var(--color-av-gray)', fontSize: '1.2rem' }}>☰</button>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '0.95rem' }} className="gradient-text">Arvitta</h1>
+          <button onClick={() => go('notifications')} className="relative">
+            <span style={{ color: 'var(--color-av-gray)' }}>◉</span>
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-2 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center"
+                style={{ background: 'var(--color-av-blue)', color: '#fff' }}>{unreadCount}</span>
+            )}
+          </button>
+        </header>
+
+        <div className="p-6 lg:p-10 max-w-6xl mx-auto float-in" key={view}>
+          {view === 'dashboard' && <DashboardView onNavigate={go} />}
+          {view === 'suppliers' && <SuppliersView />}
+          {view === 'pay' && <PaymentView />}
+          {view === 'transactions' && <TransactionsView />}
+          {view === 'notifications' && <NotificationsView />}
+          {view === 'settings' && <SettingsView />}
+        </div>
+      </main>
+    </div>
+  )
+}
