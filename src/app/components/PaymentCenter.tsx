@@ -92,3 +92,50 @@ export function PaymentView() {
                   <p className="text-xs font-bold text-white/90">{r.supplier}</p>
                   <p className="body-text text-[11px] mt-0.5">
                     {r.method} · Ref: {r.referenceId || '—'} · UTR: {r.utr || '—'}
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs font-bold" style={{ color: r.status === 'completed' ? 'var(--color-av-white)' : 'var(--color-av-gray)' }}>
+                {fmtCur(r.amount)}
+              </span>
+            </div>
+          ))}
+        </div>
+        <button className="av-btn av-btn-primary mt-5 shine" onClick={() => { setResults(null); load() }}>
+          ← Back to Payment Center
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <div className="float-in">
+        <h2 className="heading text-2xl">Payment Center</h2>
+        <p className="body-text text-xs mt-0.5">Select suppliers and payment methods to initiate batch payouts</p>
+      </div>
+
+      {/* Balance Strip */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-5">
+        <div className="glass-card p-3.5 float-in fd-1">
+          <p className="label mb-1">Available</p>
+          <p className="stat-num text-lg mt-0.5" style={{ color: 'var(--color-av-white)' }}>{fmtCur(account?.balance ?? 0)}</p>
+        </div>
+        <div className="glass-card p-3.5 float-in fd-2">
+          <p className="label mb-1">Selected</p>
+          <p className="stat-num text-lg mt-0.5" style={{ color: 'var(--color-av-blue-light)' }}>{selectedCount} · {fmtCur(totalSelected)}</p>
+        </div>
+        <div className="glass-card p-3.5 float-in fd-3">
+          <p className="label mb-1">After Payment</p>
+          <p className="stat-num text-lg mt-0.5" style={{ color: afterPayment >= 0 ? 'var(--color-av-white)' : 'var(--color-av-gray)' }}>{fmtCur(afterPayment)}</p>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="text-center py-16"><div className="spinner mx-auto mb-3"></div><p className="body-text text-xs">Loading suggestions...</p></div>
+      ) : suggestions.length === 0 ? (
+        <div className="glass p-8 text-center float-in fd-1">
+          <p className="text-3xl mb-2.5" style={{ color: 'var(--color-av-blue-light)' }}>◈</p>
+          <p className="body-text text-xs font-semibold">No suppliers with dues or insufficient balance</p>
+        </div>
+      ) : (
