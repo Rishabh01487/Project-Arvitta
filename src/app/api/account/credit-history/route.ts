@@ -10,3 +10,13 @@ export async function GET(request: NextRequest) {
     if (!businessId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const limit = parseInt(request.nextUrl.searchParams.get('limit') || '20')
+    const events = await PFCreditEvent.find({ businessId })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+
+    return NextResponse.json({ events })
+  } catch (error) {
+    console.error('Credit history error:', error)
+    return NextResponse.json({ error: 'Failed to fetch credit history' }, { status: 500 })
+  }
+}
