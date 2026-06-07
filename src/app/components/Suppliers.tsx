@@ -138,3 +138,36 @@ export function SuppliersView() {
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content" style={{ maxWidth: '560px' }} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-7">
+              <h3 className="heading text-xl">{editId ? '✏️ Edit Supplier' : '➕ New Supplier'}</h3>
+              <button onClick={() => setShowModal(false)} style={{ color: 'var(--color-av-gray-dim)' }}>✕</button>
+            </div>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="label block mb-1">Name</label><input className="av-input" value={form.name} onChange={e => set('name', e.target.value)} required /></div>
+                <div><label className="label block mb-1">Phone</label><input className="av-input" value={form.phone} onChange={e => set('phone', e.target.value)} required /></div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div><label className="label block mb-1">Category</label><select className="av-select" value={form.category} onChange={e => set('category', e.target.value)}>{Object.keys(CAT_ICONS).map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                <div><label className="label block mb-1">Priority</label><select className="av-select" value={form.priority} onChange={e => set('priority', e.target.value)}><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div>
+                <div><label className="label block mb-1">Due Amount</label><input type="number" className="av-input" value={form.totalDue} onChange={e => set('totalDue', e.target.value)} /></div>
+              </div>
+              <div className="accent-line my-1" />
+              <p className="label">Bank Details</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="label block mb-1">Account No.</label><input className="av-input" value={form.accountNumber} onChange={e => set('accountNumber', e.target.value)} /></div>
+                <div><label className="label block mb-1">IFSC</label><input className="av-input" value={form.ifsc} onChange={e => set('ifsc', e.target.value)} /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="label block mb-1">Bank Name</label><input className="av-input" value={form.bankName} onChange={e => set('bankName', e.target.value)} /></div>
+                <div><label className="label block mb-1">Account Holder</label><input className="av-input" value={form.accountHolderName} onChange={e => set('accountHolderName', e.target.value)} /></div>
+              </div>
+              <div><label className="label block mb-1">UPI ID</label><input className="av-input" placeholder="supplier@upi" value={form.upiId} onChange={e => set('upiId', e.target.value)} /></div>
+              <button type="submit" className="av-btn av-btn-primary w-full py-3.5 mt-2">{editId ? 'Update' : 'Add Supplier'}</button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
