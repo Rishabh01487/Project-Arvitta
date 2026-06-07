@@ -35,3 +35,5 @@
 - Update phase 9: visual tweaks and cleanups.
 
 - Update phase 1: visual tweaks and cleanups.
+
+- Update phase 2: visual tweaks and cleanups.
