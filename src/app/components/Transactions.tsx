@@ -64,3 +64,35 @@ export function TransactionsView() {
                       border: `1px solid ${tx.status === 'completed' ? 'rgba(56,189,248,0.2)' : 'rgba(255,255,255,0.06)'}`,
                     }}>
                     <span>{tx.status === 'completed' ? '✓' : tx.status === 'failed' ? '✕' : '◌'}</span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white/90">{tx.supplierName}</p>
+                    <p className="body-text text-[11px] mt-0.5">
+                      {new Date(tx.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      {tx.utr ? ` · UTR: ${tx.utr}` : ''}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-bold text-white/90">{fmtCur(tx.amount)}</p>
+                  <div className="flex items-center gap-1.5 mt-1.5 justify-end">
+                    <span className={`method-pill method-${tx.method.toLowerCase()}`}>{tx.method}</span>
+                    <span className={`badge badge-${tx.status}`}>{tx.status}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {total > 20 && (
+        <div className="flex justify-center gap-3 mt-6">
+          <button className="av-btn av-btn-ghost" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>← Prev</button>
+          <span className="av-btn av-btn-ghost cursor-default">Page {page}</span>
+          <button className="av-btn av-btn-ghost" onClick={() => setPage(p => p + 1)} disabled={page * 20 >= total}>Next →</button>
+        </div>
+      )}
+    </div>
+  )
+}
