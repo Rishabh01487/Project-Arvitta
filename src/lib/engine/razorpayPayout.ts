@@ -168,3 +168,44 @@ export async function createPayout(payload: CreatePayoutPayload): Promise<Razorp
   }
 
   const body = {
+    account_number: RAZORPAYX_ACCOUNT,
+    ...payload,
+  }
+
+  const res = await fetch(`${BASE_URL}/payouts`, {
+    method: 'POST',
+    headers: { 'Authorization': getAuthHeader(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) throw new Error(`Razorpay createPayout failed: ${await res.text()}`)
+  return res.json()
+}
+
+/**
+ * In simulation mode, we auto-resolve payouts after a short delay.
+ * This simulates the webhook callback that Razorpay would send.
+ * Returns a "processed" status with a UTR number.
+ */
+export async function simulatePayoutResolution(payoutId: string): Promise<{
+  status: 'processed' | 'failed'
+  utr?: string
+  failureReason?: string
+}> {
+  // 95% success rate in simulation
+  const success = Math.random() > 0.05
+  if (success) {
+    return {
+      status: 'processed',
+      utr: `UTR${Date.now().toString().slice(-10)}`,
+    }
+  } else {
+    return {
+      status: 'failed',
+      failureReason: 'Simulated: Beneficiary bank account is invalid or inactive',
+    }
+  }
+}
+
+export function isSimulationMode(): boolean {
+  return PAYOUT_MODE === 'simulation'
+}
