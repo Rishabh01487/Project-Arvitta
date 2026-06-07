@@ -45,3 +45,26 @@ export async function POST(request: NextRequest) {
   await dbConnect()
   try {
     const businessId = getBusinessIdFromRequest(request)
+    if (!businessId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const body = await request.json()
+    const { name, phone, email, category, priority, notes, totalDue, bankDetails } = body
+
+    if (!name || !phone) {
+      return NextResponse.json({ error: 'Name and phone are required' }, { status: 400 })
+    }
+
+    // Create Razorpay contact for this supplier
+    let razorpayContactId = ''
+    let razorpayFundAccountId = ''
+
+    try {
+      const contact = await createContact({
+        name,
+        email: email || undefined,
+        contact: phone,
+        type: 'vendor',
+      })
+      razorpayContactId = contact.id
+
+      // Create fund account if bank details provided
