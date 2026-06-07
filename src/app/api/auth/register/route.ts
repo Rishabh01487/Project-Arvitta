@@ -22,3 +22,25 @@ export async function POST(request: NextRequest) {
     if (existing) {
       return NextResponse.json({ error: 'Business with this email or phone already exists' }, { status: 409 })
     }
+
+    const hashedPassword = await hashPassword(password)
+    const hashedPin = await hashPin(pin)
+
+    const business = await PFBusiness.create({
+      name,
+      ownerName,
+      email,
+      phone,
+      password: hashedPassword,
+      pin: hashedPin,
+      gstin: gstin || '',
+      address,
+    })
+
+    // Create associated account with 0 balance
+    await PFAccount.create({
+      businessId: business._id,
+      balance: 0,
+      totalCredited: 0,
+      totalDebited: 0,
+    })
