@@ -93,3 +93,25 @@ export async function POST(request: NextRequest) {
       title: '💰 Account Credited',
       message: notifMessage,
       data: {
+        amount,
+        newBalance: updated!.balance,
+        suggestedSuppliers: matchResult.suggestedSuppliers.length,
+        suggestedTotal: matchResult.totalPayout,
+      },
+      actionUrl: '/pay',
+    })
+
+    return NextResponse.json({
+      success: true,
+      account: {
+        balance: updated!.balance,
+        totalCredited: updated!.totalCredited,
+      },
+      autoMatch: matchResult,
+      notification: notifMessage,
+    })
+  } catch (error) {
+    console.error('Account credit error:', error)
+    return NextResponse.json({ error: 'Failed to credit account' }, { status: 500 })
+  }
+}
