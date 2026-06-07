@@ -45,3 +45,50 @@ export function PaymentView() {
 
   const totalSelected = Object.values(selected).reduce((a, b) => a + b.amount, 0)
   const selectedCount = Object.keys(selected).length
+  const afterPayment = (account?.balance ?? 0) - totalSelected
+  const fmtCur = (n: number) => `₹${(n || 0).toLocaleString('en-IN')}`
+
+  const executePay = async () => {
+    setPaying(true); setError('')
+    const payments = Object.entries(selected).map(([supplierId, { amount, method }]) => ({ supplierId, amount, method }))
+    try {
+      const res = await authFetch('/api/payments/execute', { method: 'POST', body: JSON.stringify({ payments, pin }) })
+      const data = await res.json()
+      if (data.results) { setResults(data.results); setShowPin(false); setPin(''); await refreshAccount() }
+      else setError(data.error || 'Payment failed')
+    } catch (e) { setError('Network error'); console.error(e) }
+    setPaying(false)
+  }
+
+  const methods = ['UPI', 'NEFT', 'RTGS', 'IMPS']
+
+  if (results) {
+    const success = results.filter(r => r.status === 'completed').length
+    const total = results.reduce((a, r) => a + (r.status === 'completed' ? r.amount : 0), 0)
+    return (
+      <div className="float-in">
+        <h2 className="heading text-2xl mb-6">Payment Results</h2>
+        <div className="glass p-5 mb-5">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{
+                background: success === results.length ? 'linear-gradient(135deg, rgba(56,189,248,0.12), rgba(56,189,248,0.04))' : 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))',
+                border: `1px solid ${success === results.length ? 'rgba(56,189,248,0.2)' : 'rgba(255,255,255,0.08)'}`,
+              }}>
+              <span className="text-xl">{success === results.length ? '✓' : '⚠'}</span>
+            </div>
+            <div>
+              <p className="heading text-base">{success} of {results.length} payments successful</p>
+              <p className="body-text text-xs mt-0.5">Total paid: {fmtCur(total)}</p>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-2.5">
+          {results.map((r, i) => (
+            <div key={i} className={`glass-card p-4 flex items-center justify-between float-in fd-${Math.min(i + 1, 4)}`}>
+              <div className="flex items-center gap-3">
+                <span className="text-base">{r.status === 'completed' ? '✅' : '❌'}</span>
+                <div>
+                  <p className="text-xs font-bold text-white/90">{r.supplier}</p>
+                  <p className="body-text text-[11px] mt-0.5">
+                    {r.method} · Ref: {r.referenceId || '—'} · UTR: {r.utr || '—'}
