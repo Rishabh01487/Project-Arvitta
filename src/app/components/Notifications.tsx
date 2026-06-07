@@ -52,3 +52,28 @@ export function NotificationsView() {
                 boxShadow: !n.read ? '0 0 16px rgba(56, 189, 248, 0.04)' : undefined,
               }}>
               <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(56, 189, 248, 0.04))',
+                    border: '1px solid rgba(56, 189, 248, 0.15)',
+                  }}>
+                  <span className="text-sm">{TYPE_ICONS[n.type] || '🔔'}</span>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <p className="text-xs font-bold text-white/90">{n.title}</p>
+                    {!n.read && <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-av-blue-light)', boxShadow: '0 0 8px var(--color-av-blue-glow)' }} />}
+                  </div>
+                  <p className="body-text text-xs">{n.message}</p>
+                  <p className="body-text text-[10px] mt-1.5" style={{ color: 'var(--color-av-gray-dim)' }}>
+                    {new Date(n.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
