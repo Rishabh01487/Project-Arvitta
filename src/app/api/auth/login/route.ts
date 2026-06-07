@@ -14,3 +14,18 @@ export async function POST(request: NextRequest) {
     const business = await PFBusiness.findOne({ email })
     if (!business) {
       return NextResponse.json({ error: 'No account found with this email' }, { status: 404 })
+    }
+
+    const valid = await comparePassword(password, business.password)
+    if (!valid) {
+      return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
+    }
+
+    const token = signToken({
+      businessId: business._id.toString(),
+      email: business.email,
+      name: business.name,
+    })
+
+    return NextResponse.json({
+      success: true,
