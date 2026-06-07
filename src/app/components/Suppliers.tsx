@@ -33,3 +33,38 @@ export function SuppliersView() {
       }
     } catch (e) { console.error(e) }
   }, [authFetch, search, priorityFilter, catFilter])
+
+  useEffect(() => { load() }, [load])
+
+  const resetForm = () => { setForm({ name: '', phone: '', category: 'other', priority: 'medium', totalDue: '', accountNumber: '', ifsc: '', bankName: '', accountHolderName: '', upiId: '' }); setEditId(null) }
+  const openAdd = () => { resetForm(); setShowModal(true) }
+  const openEdit = (s: Supplier) => {
+    setForm({
+      name: s.name,
+      phone: s.phone,
+      category: s.category,
+      priority: s.priority,
+      totalDue: s.totalDue.toString(),
+      accountNumber: s.bankDetails?.accountNumber || '',
+      ifsc: s.bankDetails?.ifscCode || '',
+      bankName: s.bankDetails?.bankName || '',
+      accountHolderName: s.bankDetails?.holderName || '',
+      upiId: s.upiId || ''
+    })
+    setEditId(s._id); setShowModal(true)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const body = {
+      name: form.name,
+      phone: form.phone,
+      category: form.category,
+      priority: form.priority,
+      totalDue: parseFloat(form.totalDue) || 0,
+      bankDetails: {
+        accountNumber: form.accountNumber,
+        ifscCode: form.ifsc,
+        bankName: form.bankName,
+        holderName: form.accountHolderName
+      },
