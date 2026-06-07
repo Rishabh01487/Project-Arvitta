@@ -29,3 +29,17 @@ export async function GET(request: NextRequest) {
         gstin: business.gstin,
         address: business.address,
         bankAccount: business.bankAccount,
+      },
+      account: account ? {
+        balance: account.balance,
+        totalCredited: account.totalCredited,
+        totalDebited: account.totalDebited,
+        lastCreditedAt: account.lastCreditedAt,
+        lastCreditAmount: account.lastCreditAmount,
+      } : null,
+    })
+  } catch (error) {
+    console.error('Me error:', error)
+    return NextResponse.json({ error: 'Failed to fetch profile' }, { status: 500 })
+  }
+}
