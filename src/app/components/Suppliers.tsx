@@ -68,3 +68,37 @@ export function SuppliersView() {
         bankName: form.bankName,
         holderName: form.accountHolderName
       },
+      upiId: form.upiId || undefined
+    }
+    await authFetch(editId ? `/api/suppliers/${editId}` : '/api/suppliers', { method: editId ? 'PUT' : 'POST', body: JSON.stringify(body) })
+    setShowModal(false); resetForm(); load()
+  }
+
+  const handleDelete = async (id: string) => { if (!confirm('Delete this supplier?')) return; await authFetch(`/api/suppliers/${id}`, { method: 'DELETE' }); load() }
+  const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
+  const fmtCur = (n: number) => `₹${(n || 0).toLocaleString('en-IN')}`
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6 float-in">
+        <div>
+          <h2 className="heading text-2xl">Supplier Ledger</h2>
+          <p className="mt-1" style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', color: 'var(--color-av-gray)', fontSize: '0.85rem' }}>
+            {suppliers.length} suppliers · Outstanding: <span style={{ color: 'var(--color-av-danger)' }}>{fmtCur(totalDue)}</span>
+          </p>
+        </div>
+        <button className="av-btn av-btn-primary shine" onClick={openAdd}>+ Add Supplier</button>
+      </div>
+
+      {/* Filters */}
+      <div className="glass-card p-5 mb-7 float-in fd-1">
+        <div className="flex flex-col md:flex-row gap-3">
+          <input className="av-input flex-1" placeholder="Search suppliers..." value={search} onChange={e => setSearch(e.target.value)} />
+          <select className="av-select" value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)}>
+            <option value="">All Priorities</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
+          </select>
+          <select className="av-select" value={catFilter} onChange={e => setCatFilter(e.target.value)}>
+            <option value="">All Categories</option>{Object.keys(CAT_ICONS).map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+      </div>
