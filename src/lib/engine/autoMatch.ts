@@ -86,3 +86,23 @@ export async function runAutoMatch(businessId: string): Promise<AutoMatchResult>
           accountNumber: supplier.bankDetails?.accountNumber,
           ifscCode: supplier.bankDetails?.ifscCode,
           bankName: supplier.bankDetails?.bankName,
+          holderName: supplier.bankDetails?.holderName,
+          upiId: supplier.bankDetails?.upiId,
+        },
+      })
+      remaining -= supplier.totalDue
+      totalPayout += supplier.totalDue
+    } else {
+      unpayableCount++
+    }
+  }
+
+  return {
+    balance,
+    suggestedSuppliers: suggested,
+    totalPayout,
+    remainingBalance: remaining,
+    totalDueAcrossAll,
+    unpayableCount,
+  }
+}
