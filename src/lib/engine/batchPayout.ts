@@ -94,3 +94,50 @@ export async function executeBatchPayout(
     }
 
     const refId = generateRefId()
+    const balanceBefore = currentBalance
+
+    // Create pending transaction
+    const txn = await PFTransaction.create({
+      businessId,
+      supplierId: payment.supplierId,
+      amount: payment.amount,
+      method: payment.method,
+      status: 'processing',
+      referenceId: refId,
+      balanceBefore,
+      balanceAfter: balanceBefore - payment.amount,
+      initiatedAt: new Date(),
+    })
+
+    try {
+      // Call Razorpay Payout API
+      const fundAccountId = supplier.bankDetails?.razorpayFundAccountId || 'sim_fund_account'
+      const payout = await createPayout({
+        fund_account_id: fundAccountId,
+        amount: payment.amount * 100, // convert to paise
+        currency: 'INR',
+        mode: payment.method,
+        purpose: 'vendor_bill',
+        reference_id: refId,
+        narration: `PayFlow payout to ${supplier.name}`,
+      })
+
+      // Update transaction with Razorpay details
+      await PFTransaction.findByIdAndUpdate(txn._id, {
+        razorpayPayoutId: payout.id,
+        razorpayPayoutStatus: payout.status,
+      })
+
+      // In simulation mode, resolve immediately
+      let finalStatus: 'completed' | 'failed' = 'completed'
+      let utrNumber = payout.utr
+      let failureReason: string | undefined
+
+      if (isSimulationMode()) {
+        const resolution = await simulatePayoutResolution(payout.id)
+        if (resolution.status === 'processed') {
+          finalStatus = 'completed'
+          utrNumber = resolution.utr
+        } else {
+          finalStatus = 'failed'
+          failureReason = resolution.failureReason
