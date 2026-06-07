@@ -26,3 +26,31 @@ export async function GET(
     return NextResponse.json({ supplier, transactions })
   } catch (error) {
     console.error('Supplier detail error:', error)
+    return NextResponse.json({ error: 'Failed to get supplier' }, { status: 500 })
+  }
+}
+
+// PUT /api/suppliers/[id] — update supplier
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  await dbConnect()
+  try {
+    const businessId = getBusinessIdFromRequest(request)
+    if (!businessId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const { id } = await params
+    const body = await request.json()
+
+    const supplier = await PFSupplier.findOneAndUpdate(
+      { _id: id, businessId },
+      { $set: body },
+      { new: true }
+    )
+    if (!supplier) return NextResponse.json({ error: 'Supplier not found' }, { status: 404 })
+
+    return NextResponse.json({ success: true, supplier })
+  } catch (error) {
+    console.error('Supplier update error:', error)
+    return NextResponse.json({ error: 'Failed to update supplier' }, { status: 500 })
