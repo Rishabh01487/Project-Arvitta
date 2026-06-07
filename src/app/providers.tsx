@@ -165,3 +165,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: true }
       }
       return { success: false, error: data.error }
+    } catch {
+      return { success: false, error: 'Network error' }
+    }
+  }
+
+  const demoLogin = async () => {
+    try {
+      const res = await fetch('/api/auth/demo-login', { method: 'POST' })
+      const data = await res.json()
+      if (data.success) {
+        setToken(data.token)
+        setBusiness(data.business)
+        localStorage.setItem('pf_token', data.token)
+        setTimeout(() => refreshAccount(), 100)
+        return { success: true }
+      }
+      return { success: false, error: data.error }
+    } catch {
+      return { success: false, error: 'Network error' }
+    }
+  }
+
+  const logout = () => {
+    setToken(null)
+    setBusiness(null)
+    setAccount(null)
+    setNotifications([])
+    setUnreadCount(0)
+    localStorage.removeItem('pf_token')
+  }
+
+  return (
+    <AuthContext.Provider value={{
+      token, business, account, notifications, unreadCount, isLoading,
+      login, register, demoLogin, logout, refreshAccount, refreshNotifications, authFetch,
+    }}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
