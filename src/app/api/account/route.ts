@@ -46,3 +46,26 @@ export async function GET(request: NextRequest) {
 // POST /api/account — credit the account (simulate bank credit)
 export async function POST(request: NextRequest) {
   await dbConnect()
+  try {
+    const businessId = getBusinessIdFromRequest(request)
+    if (!businessId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const { amount, source } = await request.json()
+    if (!amount || amount < 1) {
+      return NextResponse.json({ error: 'Amount must be at least ₹1' }, { status: 400 })
+    }
+
+    const account = await PFAccount.findOne({ businessId })
+    if (!account) return NextResponse.json({ error: 'Account not found' }, { status: 404 })
+
+    const balanceBefore = account.balance
+
+    // Credit the account
+    const updated = await PFAccount.findByIdAndUpdate(account._id, {
+      $inc: { balance: amount, totalCredited: amount },
+      lastCreditedAt: new Date(),
+      lastCreditAmount: amount,
+    }, { new: true })
+
+    // Run auto-match to see what can be paid now
+    const matchResult = await runAutoMatch(businessId)
