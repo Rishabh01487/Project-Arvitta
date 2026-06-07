@@ -37,3 +37,5 @@
 - Update phase 1: visual tweaks and cleanups.
 
 - Update phase 2: visual tweaks and cleanups.
+
+- Update phase 3: visual tweaks and cleanups.
