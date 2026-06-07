@@ -9,3 +9,13 @@ export interface IPFNotification extends Document {
   read: boolean
   actionUrl?: string
   createdAt: Date
+}
+
+const PFNotificationSchema = new Schema<IPFNotification>({
+  businessId: { type: Schema.Types.ObjectId, ref: 'PFBusiness', required: true, index: true },
+  type: {
+    type: String,
+    enum: ['credit', 'payout_success', 'payout_failed', 'payout_batch_complete', 'reminder', 'system'],
+    required: true,
+  },
+  title: { type: String, required: true },
