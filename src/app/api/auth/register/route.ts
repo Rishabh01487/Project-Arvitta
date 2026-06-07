@@ -44,3 +44,26 @@ export async function POST(request: NextRequest) {
       totalCredited: 0,
       totalDebited: 0,
     })
+
+    const token = signToken({
+      businessId: business._id.toString(),
+      email: business.email,
+      name: business.name,
+    })
+
+    return NextResponse.json({
+      success: true,
+      token,
+      business: {
+        id: business._id,
+        name: business.name,
+        ownerName: business.ownerName,
+        email: business.email,
+        phone: business.phone,
+      },
+    }, { status: 201 })
+  } catch (error) {
+    console.error('Register error:', error)
+    return NextResponse.json({ error: 'Registration failed' }, { status: 500 })
+  }
+}
