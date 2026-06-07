@@ -14,3 +14,19 @@ export async function GET(request: NextRequest) {
     const notifications = await PFNotification.find({ businessId })
       .sort({ createdAt: -1 })
       .limit(limit)
+
+    const unreadCount = await PFNotification.countDocuments({ businessId, read: false })
+
+    return NextResponse.json({ notifications, unreadCount })
+  } catch (error) {
+    console.error('Notifications GET error:', error)
+    return NextResponse.json({ error: 'Failed to fetch notifications' }, { status: 500 })
+  }
+}
+
+// POST /api/notifications — mark notifications as read
+export async function POST(request: NextRequest) {
+  await dbConnect()
+  try {
+    const businessId = getBusinessIdFromRequest(request)
+    if (!businessId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
