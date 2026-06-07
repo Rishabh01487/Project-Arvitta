@@ -68,3 +68,38 @@ export function AppShell() {
       }}>
         {/* Logo */}
         <div className="p-5 pb-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center levitate"
+            style={{
+              background: 'linear-gradient(135deg, var(--color-av-mint), var(--color-av-blue-light))',
+              boxShadow: '0 4px 16px rgba(56,189,248,0.2)',
+            }}>
+            <span style={{ fontSize: '18px', fontFamily: 'var(--font-display)', fontWeight: 800, color: '#090b11' }}>A</span>
+          </div>
+          <div>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', fontWeight: 800 }} className="gradient-text">Arvitta</h1>
+            <p className="label mt-0.5" style={{ fontSize: '0.55rem', letterSpacing: '0.12em', color: 'var(--color-av-blue-light)' }}>Payment Intelligence</p>
+          </div>
+        </div>
+
+        {/* Balance crystal card */}
+        <div className="mx-4 p-4 rounded-xl levitate" style={{
+          background: 'linear-gradient(135deg, rgba(56,189,248,0.06) 0%, rgba(0,132,255,0.03) 100%)',
+          border: '1px solid rgba(56,189,248,0.12)',
+          boxShadow: '0 2px 10px rgba(56,189,248,0.02)',
+        }}>
+          <p className="label mb-1.5">Available Balance</p>
+          <p className="stat-num text-lg" style={{ color: 'var(--color-av-white)' }}>
+            {fmtBal(account?.balance ?? 0)}
+          </p>
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 mt-4 px-3 space-y-0.5">
+          {NAV.map(item => {
+            const active = view === item.id
+            return (
+              <button key={item.id} onClick={() => go(item.id)}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all relative"
+                style={{
+                  fontFamily: 'var(--font-body)', fontSize: '0.8rem', fontWeight: active ? 700 : 500,
+                  background: active ? 'rgba(56,189,248,0.08)' : 'transparent',
