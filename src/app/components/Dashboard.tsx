@@ -298,3 +298,76 @@ export function DashboardView({ onNavigate }: { onNavigate: (v: string) => void 
               <div className="p-2 rounded bg-black/20 border border-white/5 flex items-center justify-between">
                 <span>API Gateway Handshake</span>
                 <span className="text-sky-400 font-bold">VERIFIED</span>
+              </div>
+              <div className="p-2 rounded bg-black/20 border border-white/5 flex items-center justify-between">
+                <span>Auto-Match Engine</span>
+                <span className="text-sky-400 font-bold">STANDBY</span>
+              </div>
+              <div className="p-2 rounded bg-black/20 border border-white/5 flex items-center justify-between">
+                <span>Database Sync</span>
+                <span className="text-sky-400 font-bold">ONLINE</span>
+              </div>
+              <div className="p-2 rounded bg-black/20 border border-white/5 flex items-center justify-between">
+                <span>JWT Encryption Key</span>
+                <span className="text-sky-400 font-bold">SECURED</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Credits Events */}
+          {creditEvents.length > 0 && (
+            <div className="glass-card p-5 float-in fd-5">
+              <h3 className="heading text-sm mb-3.5">Recent Credits</h3>
+              <div className="space-y-2">
+                {creditEvents.map(ev => (
+                  <div key={ev._id} className="flex items-center justify-between py-2.5 px-3.5 rounded-xl shine" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                    <div>
+                      <p className="text-xs font-semibold text-white/80">{ev.source}</p>
+                      <p className="text-[9px]" style={{ color: 'var(--color-av-gray-dim)' }}>{new Date(ev.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                    <span className="text-xs font-bold" style={{ color: 'var(--color-av-blue-light)', fontFamily: 'var(--font-display)' }}>+{fmtCur(ev.amount)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+        </div>
+
+      </div>
+
+      {/* Credit Modal */}
+      {showCredit && (
+        <div className="modal-overlay" onClick={() => setShowCredit(false)}>
+          <div className="modal-content" style={{ padding: '20px', maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="heading text-lg">💰 Credit Account</h3>
+              <button onClick={() => setShowCredit(false)} style={{ color: 'var(--color-av-gray-dim)' }}>✕</button>
+            </div>
+            <p className="body-text text-xs mb-4">Simulate a bank credit to trigger the auto-match engine.</p>
+            <div className="flex flex-wrap gap-1.5 mb-4">
+              {quickAmounts.map(a => (
+                <button key={a} onClick={() => setCreditAmount(a.toString())}
+                  className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer"
+                  style={{
+                    background: creditAmount === a.toString() ? 'linear-gradient(135deg, var(--color-av-blue), var(--color-av-blue-deep))' : 'rgba(255,255,255,0.04)',
+                    color: creditAmount === a.toString() ? '#fff' : 'var(--color-av-gray)',
+                    border: `1px solid ${creditAmount === a.toString() ? 'rgba(35,77,194,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                    boxShadow: creditAmount === a.toString() ? '0 4px 16px rgba(35,77,194,0.25)' : 'none',
+                  }}>{fmtCur(a)}</button>
+              ))}
+            </div>
+            <input className="av-input mb-4" type="number" placeholder="Enter amount" value={creditAmount} onChange={e => setCreditAmount(e.target.value)} />
+            <div className="flex justify-between items-center p-3 rounded-xl mb-4" style={{ background: 'rgba(56, 189, 248, 0.04)', border: '1px solid rgba(56, 189, 248, 0.1)' }}>
+              <span className="label">New Balance</span>
+              <span className="text-xs font-bold text-white/90" style={{ color: 'var(--color-av-blue-light)', fontFamily: 'var(--font-display)' }}>{fmtCur((account?.balance ?? 0) + (parseInt(creditAmount) || 0))}</span>
+            </div>
+            <button className="av-btn av-btn-primary w-full py-2.5 cursor-pointer" onClick={handleCredit} disabled={crediting || !creditAmount}>
+              {crediting ? <><div className="spinner"></div> Processing...</> : `Credit ${creditAmount ? fmtCur(parseInt(creditAmount)) : '₹0'}`}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
