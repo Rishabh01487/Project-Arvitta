@@ -68,3 +68,25 @@ export async function POST(request: NextRequest) {
       razorpayContactId = contact.id
 
       // Create fund account if bank details provided
+      if (bankDetails?.accountNumber && bankDetails?.ifscCode) {
+        const fundAccount = await createFundAccount({
+          contact_id: contact.id,
+          account_type: 'bank_account',
+          bank_account: {
+            name: bankDetails.holderName || name,
+            ifsc: bankDetails.ifscCode,
+            account_number: bankDetails.accountNumber,
+          },
+        })
+        razorpayFundAccountId = fundAccount.id
+      } else if (bankDetails?.upiId) {
+        const fundAccount = await createFundAccount({
+          contact_id: contact.id,
+          account_type: 'vpa',
+          vpa: { address: bankDetails.upiId },
+        })
+        razorpayFundAccountId = fundAccount.id
+      }
+    } catch (err) {
+      console.error('Razorpay contact creation error (non-fatal):', err)
+    }
