@@ -1,0 +1,17 @@
+# PayFlow
+
+## Dependencies
+node_modules/
+.next/
+
+## Environment
+.env.local
+.env*.local
+
+## IDE
+.vscode/
+.idea/
+
+## OS
+Thumbs.db
+.DS_Store
