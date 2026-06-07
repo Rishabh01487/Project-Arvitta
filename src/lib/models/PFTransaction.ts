@@ -32,3 +32,19 @@ const PFTransactionSchema = new Schema<IPFTransaction>({
     type: String,
     enum: ['pending', 'processing', 'completed', 'failed', 'reversed'],
     default: 'pending',
+  },
+  razorpayPayoutId: String,
+  razorpayPayoutStatus: String,
+  referenceId: { type: String, required: true, unique: true },
+  utrNumber: String,
+  balanceBefore: { type: Number, required: true },
+  balanceAfter: { type: Number, required: true },
+  failureReason: String,
+  initiatedAt: { type: Date, default: Date.now },
+  completedAt: Date,
+}, { timestamps: true })
+
+PFTransactionSchema.index({ businessId: 1, createdAt: -1 })
+PFTransactionSchema.index({ supplierId: 1, createdAt: -1 })
+
+export default mongoose.models.PFTransaction || mongoose.model<IPFTransaction>('PFTransaction', PFTransactionSchema)
