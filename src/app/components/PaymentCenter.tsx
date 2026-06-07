@@ -139,3 +139,50 @@ export function PaymentView() {
           <p className="body-text text-xs font-semibold">No suppliers with dues or insufficient balance</p>
         </div>
       ) : (
+        <>
+          <div className="space-y-2.5">
+            {suggestions.map((s, i) => {
+              const isSelected = !!selected[s._id]
+              return (
+                <div key={s._id} className={`glass-card p-4 transition-all float-in fd-${Math.min(i + 1, 4)}`}
+                  style={{
+                    borderColor: isSelected ? 'rgba(56, 189, 248, 0.25)' : undefined,
+                    boxShadow: isSelected ? '0 0 20px rgba(56, 189, 248, 0.08)' : undefined,
+                  }}>
+                  <div className="flex items-start gap-3">
+                    <button onClick={() => toggleSelect(s._id, s)}
+                      className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 transition-all"
+                      style={{
+                        background: isSelected ? 'linear-gradient(135deg, var(--color-av-blue), var(--color-av-blue-deep))' : 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${isSelected ? 'rgba(56, 189, 248, 0.4)' : 'rgba(255,255,255,0.1)'}`,
+                        boxShadow: isSelected ? '0 0 12px rgba(56, 189, 248, 0.3)' : 'none',
+                        color: '#fff',
+                        fontSize: '11px',
+                      }}>
+                      {isSelected ? '✓' : ''}
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-xs font-bold text-white/90 truncate">{s.name}</span>
+                        <span className={`badge badge-${s.priority}`}>{s.priority}</span>
+                      </div>
+                      <p className="body-text text-[11px] truncate">
+                        {s.phone} · Due: {fmtCur(s.totalDue)} · {s.bankDetails.bankName} · {s.upiId || 'No UPI'}
+                      </p>
+                      {isSelected && (
+                        <div className="flex items-center gap-1.5 mt-2.5">
+                          {methods.map(m => (
+                            <button key={m} onClick={() => setSelected(p => ({ ...p, [s._id]: { ...p[s._id], method: m } }))}
+                              className={`method-pill method-${m.toLowerCase()} transition-all cursor-pointer`}
+                              style={{
+                                opacity: selected[s._id]?.method === m ? 1 : 0.4,
+                                border: selected[s._id]?.method === m ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid transparent',
+                              }}>
+                              {m}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {isSelected && (
+                      <input type="number" className="av-input w-24 text-right py-1 px-2 text-xs" value={selected[s._id]?.amount ?? 0}
