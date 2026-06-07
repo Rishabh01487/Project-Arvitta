@@ -22,3 +22,27 @@ export async function GET(request: NextRequest) {
     const totalDue = suppliers.reduce((sum, s) => sum + s.totalDue, 0)
     const supplierCount = suppliers.length
     const suppliersWithDue = suppliers.filter(s => s.totalDue > 0).length
+
+    return NextResponse.json({
+      account: {
+        balance: account.balance,
+        totalCredited: account.totalCredited,
+        totalDebited: account.totalDebited,
+        lastCreditedAt: account.lastCreditedAt,
+        lastCreditAmount: account.lastCreditAmount,
+      },
+      stats: {
+        totalDue,
+        supplierCount,
+        suppliersWithDue,
+      },
+    })
+  } catch (error) {
+    console.error('Account GET error:', error)
+    return NextResponse.json({ error: 'Failed to get account' }, { status: 500 })
+  }
+}
+
+// POST /api/account — credit the account (simulate bank credit)
+export async function POST(request: NextRequest) {
+  await dbConnect()
