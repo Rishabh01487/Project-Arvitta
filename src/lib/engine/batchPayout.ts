@@ -189,3 +189,49 @@ export async function executeBatchPayout(
 
         results.push({
           supplierId: payment.supplierId,
+          supplierName: supplier.name,
+          amount: payment.amount,
+          method: payment.method,
+          status: 'failed',
+          referenceId: refId,
+          failureReason,
+        })
+      }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error'
+      await PFTransaction.findByIdAndUpdate(txn._id, {
+        status: 'failed',
+        failureReason: errorMsg,
+      })
+      failCount++
+      results.push({
+        supplierId: payment.supplierId,
+        supplierName: supplier.name,
+        amount: payment.amount,
+        method: payment.method,
+        status: 'failed',
+        referenceId: refId,
+        failureReason: errorMsg,
+      })
+    }
+  }
+
+  // Create batch completion notification
+  await PFNotification.create({
+    businessId,
+    type: 'payout_batch_complete',
+    title: `Batch Payout Complete`,
+    message: `${successCount} of ${payments.length} payments processed. Total: ₹${totalPaid.toLocaleString('en-IN')}`,
+    data: { successCount, failCount, totalPaid, remainingBalance: currentBalance },
+    actionUrl: '/transactions',
+  })
+
+  return {
+    totalProcessed: payments.length,
+    successCount,
+    failCount,
+    totalPaid,
+    remainingBalance: currentBalance,
+    results,
+  }
+}
