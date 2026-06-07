@@ -43,3 +43,5 @@
 - Update phase 4: visual tweaks and cleanups.
 
 - Update phase 5: visual tweaks and cleanups.
+
+- Update phase 6: visual tweaks and cleanups.
