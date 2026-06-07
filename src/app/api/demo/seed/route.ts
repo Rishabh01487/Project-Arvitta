@@ -199,3 +199,52 @@ export async function POST(request: NextRequest) {
         suggestedSupplierCount: 3,
         createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
       },
+      {
+        businessId,
+        amount: 200000,
+        source: 'NEFT Inward',
+        balanceBefore: 650000,
+        balanceAfter: 850000,
+        triggeredAutoMatch: true,
+        suggestedPayoutTotal: 15000,
+        suggestedSupplierCount: 1,
+        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      },
+    ]
+    await PFCreditEvent.insertMany(creditEventsData)
+
+    // 6. Seed Notifications
+    const notificationData = [
+      {
+        businessId,
+        type: 'payout_batch_complete',
+        title: 'Batch Payout Completed',
+        message: 'Successfully processed payments of ₹3,00,000 for 3 suppliers.',
+        read: true,
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      },
+      {
+        businessId,
+        type: 'credit',
+        title: 'Account Credited',
+        message: 'Your Corporate Debit Wallet was credited with ₹2,00,000 via NEFT Inward.',
+        read: true,
+        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      },
+      {
+        businessId,
+        type: 'payout_failed',
+        title: 'Payout Failed',
+        message: 'Payment of ₹30,000 to Mahalaxmi Transport failed (Invalid beneficiary UPI ID).',
+        read: false,
+        createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
+      },
+    ]
+    await PFNotification.insertMany(notificationData)
+
+    return NextResponse.json({ success: true, message: 'Demo workspace populated successfully!' })
+  } catch (error) {
+    console.error('Seed error:', error)
+    return NextResponse.json({ error: 'Failed to seed workspace' }, { status: 500 })
+  }
+}
