@@ -14,3 +14,18 @@ export interface IPFBusiness extends Document {
     ifscCode?: string
     bankName?: string
     holderName?: string
+    verified: boolean
+  }
+  razorpayContactId?: string
+  razorpayFundAccountId?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+const PFBusinessSchema = new Schema<IPFBusiness>({
+  name: { type: String, required: true },
+  ownerName: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  phone: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  gstin: { type: String },
