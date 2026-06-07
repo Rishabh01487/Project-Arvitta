@@ -90,3 +90,26 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       console.error('Razorpay contact creation error (non-fatal):', err)
     }
+
+    const supplier = await PFSupplier.create({
+      businessId,
+      name,
+      phone,
+      email: email || '',
+      category: category || 'other',
+      priority: priority || 'medium',
+      notes: notes || '',
+      totalDue: totalDue || 0,
+      bankDetails: {
+        ...bankDetails,
+        razorpayContactId,
+        razorpayFundAccountId,
+      },
+    })
+
+    return NextResponse.json({ success: true, supplier }, { status: 201 })
+  } catch (error) {
+    console.error('Supplier create error:', error)
+    return NextResponse.json({ error: 'Failed to add supplier' }, { status: 500 })
+  }
+}
