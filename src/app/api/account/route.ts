@@ -69,3 +69,27 @@ export async function POST(request: NextRequest) {
 
     // Run auto-match to see what can be paid now
     const matchResult = await runAutoMatch(businessId)
+
+    // Create credit event
+    await PFCreditEvent.create({
+      businessId,
+      amount,
+      source: source || 'Bank Transfer',
+      balanceBefore,
+      balanceAfter: updated!.balance,
+      triggeredAutoMatch: matchResult.suggestedSuppliers.length > 0,
+      suggestedPayoutTotal: matchResult.totalPayout,
+      suggestedSupplierCount: matchResult.suggestedSuppliers.length,
+    })
+
+    // Create notification
+    const notifMessage = matchResult.suggestedSuppliers.length > 0
+      ? `₹${amount.toLocaleString('en-IN')} credited! You can now pay ${matchResult.suggestedSuppliers.length} supplier(s) totaling ₹${matchResult.totalPayout.toLocaleString('en-IN')}.`
+      : `₹${amount.toLocaleString('en-IN')} credited to your account. No pending supplier dues to pay.`
+
+    await PFNotification.create({
+      businessId,
+      type: 'credit',
+      title: '💰 Account Credited',
+      message: notifMessage,
+      data: {
