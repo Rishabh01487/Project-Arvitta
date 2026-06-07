@@ -16,3 +16,20 @@ export function signToken(payload: JWTPayload): string {
 
 export function verifyToken(token: string): JWTPayload | null {
   try {
+    return jwt.verify(token, JWT_SECRET) as JWTPayload
+  } catch {
+    return null
+  }
+}
+
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 12)
+}
+
+export async function comparePassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash)
+}
+
+export async function hashPin(pin: string): Promise<string> {
+  return bcrypt.hash(pin, 10)
+}
