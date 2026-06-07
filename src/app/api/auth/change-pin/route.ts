@@ -20,3 +20,13 @@ export async function POST(request: NextRequest) {
 
     const valid = await comparePin(currentPin, business.pin)
     if (!valid) return NextResponse.json({ error: 'Current PIN is incorrect' }, { status: 403 })
+
+    const hashedNew = await hashPin(newPin)
+    await PFBusiness.findByIdAndUpdate(businessId, { pin: hashedNew })
+
+    return NextResponse.json({ success: true, message: 'PIN changed successfully' })
+  } catch (error) {
+    console.error('Change PIN error:', error)
+    return NextResponse.json({ error: 'Failed to change PIN' }, { status: 500 })
+  }
+}
