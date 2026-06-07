@@ -29,3 +29,17 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      token,
+      business: {
+        id: business._id,
+        name: business.name,
+        ownerName: business.ownerName,
+        email: business.email,
+        phone: business.phone,
+      },
+    })
+  } catch (error) {
+    console.error('Login error:', error)
+    return NextResponse.json({ error: 'Login failed' }, { status: 500 })
+  }
+}
