@@ -100,3 +100,37 @@ function AuthPage() {
 }
 
 function LoginForm() {
+  const { login } = useAuth()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); setError(''); setLoading(true)
+    const res = await login(email, password)
+    if (!res.success) setError(res.error || 'Login failed')
+    setLoading(false)
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-left">
+      {error && <div className="p-2.5 rounded-xl text-xs font-semibold" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-av-gray)', border: '1px solid rgba(255,255,255,0.1)' }}>{error}</div>}
+      <div><label className="label block mb-1.5">Email</label><input type="email" className="av-input py-2 px-3 text-xs" placeholder="you@business.com" value={email} onChange={e => setEmail(e.target.value)} required /></div>
+      <div><label className="label block mb-1.5">Password</label><input type="password" className="av-input py-2 px-3 text-xs" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required /></div>
+      <button type="submit" className="av-btn av-btn-primary w-full py-2.5 mt-0.5" disabled={loading}>
+        {loading ? <><div className="spinner"></div> Signing in...</> : 'Sign In →'}
+      </button>
+    </form>
+  )
+}
+
+function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
+  const { register } = useAuth()
+  const [form, setForm] = useState({ name: '', ownerName: '', email: '', phone: '', password: '', pin: '', address: '', gstin: '' })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); setError('')
