@@ -102,3 +102,39 @@ export function SuppliersView() {
           </select>
         </div>
       </div>
+
+      {/* Table */}
+      <div className="glass p-1 overflow-x-auto float-in fd-2">
+        <table className="av-table">
+          <thead><tr><th>Supplier</th><th>Category</th><th>Priority</th><th>Due</th><th>Paid</th><th>Last Paid</th><th>Actions</th></tr></thead>
+          <tbody>
+            {suppliers.length === 0 ? (
+              <tr><td colSpan={7} className="text-center py-14">
+                <p className="text-4xl mb-3 opacity-30">◎</p>
+                <p className="body-text text-sm">No suppliers found</p>
+              </td></tr>
+            ) : suppliers.map(s => (
+              <tr key={s._id}>
+                <td>
+                  <p className="font-bold text-sm" style={{ color: 'var(--color-av-white-80)' }}>{s.name}</p>
+                  <p className="text-xs" style={{ color: 'var(--color-av-gray-dim)' }}>{s.phone}</p>
+                </td>
+                <td><span className="text-sm">{CAT_ICONS[s.category] || '📋'} {s.category}</span></td>
+                <td><span className={`badge badge-${s.priority}`}>{s.priority}</span></td>
+                <td><span className="font-bold text-sm" style={{ color: s.totalDue > 0 ? 'var(--color-av-danger)' : 'var(--color-av-success)', fontFamily: 'var(--font-display)' }}>{fmtCur(s.totalDue)}</span></td>
+                <td><span className="text-sm" style={{ color: 'var(--color-av-success)' }}>{fmtCur(s.totalPaid)}</span></td>
+                <td><span className="text-xs" style={{ color: 'var(--color-av-gray-dim)' }}>{s.lastPaidAt ? new Date(s.lastPaidAt).toLocaleDateString('en-IN') : '—'}</span></td>
+                <td className="flex gap-2">
+                  <button className="av-btn av-btn-ghost text-xs py-1 px-3" onClick={() => openEdit(s)}>Edit</button>
+                  <button onClick={() => handleDelete(s._id)} className="px-2 py-1 rounded-lg" style={{ color: 'var(--color-av-danger)', opacity: 0.5 }}
+                    onMouseOver={e => (e.currentTarget.style.opacity = '1')} onMouseOut={e => (e.currentTarget.style.opacity = '0.5')}>✕</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" style={{ maxWidth: '560px' }} onClick={e => e.stopPropagation()}>
