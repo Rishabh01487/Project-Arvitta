@@ -28,3 +28,16 @@ async function dbConnect() {
       serverSelectionTimeoutMS: 30000,
       socketTimeoutMS: 45000,
     }).then((m) => m)
+  }
+
+  try {
+    cached.conn = await cached.promise
+  } catch (e) {
+    cached.promise = null
+    throw e
+  }
+
+  return cached.conn
+}
+
+export default dbConnect
