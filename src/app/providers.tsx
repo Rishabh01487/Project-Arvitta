@@ -40,3 +40,45 @@ interface AuthContextType {
   register: (data: Record<string, string>) => Promise<{ success: boolean; error?: string }>
   demoLogin: () => Promise<{ success: boolean; error?: string }>
   logout: () => void
+  refreshAccount: () => Promise<void>
+  refreshNotifications: () => Promise<void>
+  authFetch: (url: string, opts?: RequestInit) => Promise<Response>
+}
+
+const AuthContext = createContext<AuthContextType | null>(null)
+
+export function useAuth() {
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider')
+  return ctx
+}
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [token, setToken] = useState<string | null>(null)
+  const [business, setBusiness] = useState<Business | null>(null)
+  const [account, setAccount] = useState<Account | null>(null)
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+
+  const authFetch = useCallback(async (url: string, opts: RequestInit = {}) => {
+    const t = token || localStorage.getItem('pf_token')
+    return fetch(url, {
+      ...opts,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(t ? { Authorization: `Bearer ${t}` } : {}),
+        ...opts.headers,
+      },
+    })
+  }, [token])
+
+  const refreshAccount = useCallback(async () => {
+    try {
+      const res = await authFetch('/api/account')
+      if (res.ok) {
+        const data = await res.json()
+        setAccount(data.account)
+      }
+    } catch (e) { console.error('refreshAccount error:', e) }
+  }, [authFetch])
