@@ -141,3 +141,51 @@ export async function executeBatchPayout(
         } else {
           finalStatus = 'failed'
           failureReason = resolution.failureReason
+        }
+      }
+
+      if (finalStatus === 'completed') {
+        // Deduct from balance
+        currentBalance -= payment.amount
+        await PFAccount.findByIdAndUpdate(account._id, {
+          $inc: { balance: -payment.amount, totalDebited: payment.amount },
+        })
+
+        // Update supplier dues
+        await PFSupplier.findByIdAndUpdate(payment.supplierId, {
+          $inc: { totalDue: -payment.amount, totalPaid: payment.amount },
+          lastPaidAt: new Date(),
+        })
+
+        // Update transaction
+        await PFTransaction.findByIdAndUpdate(txn._id, {
+          status: 'completed',
+          utrNumber,
+          balanceAfter: currentBalance,
+          completedAt: new Date(),
+          razorpayPayoutStatus: 'processed',
+        })
+
+        successCount++
+        totalPaid += payment.amount
+
+        results.push({
+          supplierId: payment.supplierId,
+          supplierName: supplier.name,
+          amount: payment.amount,
+          method: payment.method,
+          status: 'completed',
+          referenceId: refId,
+          utrNumber,
+        })
+      } else {
+        // Payment failed — don't deduct balance
+        await PFTransaction.findByIdAndUpdate(txn._id, {
+          status: 'failed',
+          failureReason,
+          razorpayPayoutStatus: 'failed',
+        })
+        failCount++
+
+        results.push({
+          supplierId: payment.supplierId,
