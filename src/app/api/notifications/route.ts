@@ -30,3 +30,18 @@ export async function POST(request: NextRequest) {
   try {
     const businessId = getBusinessIdFromRequest(request)
     if (!businessId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const { ids, markAll } = await request.json()
+
+    if (markAll) {
+      await PFNotification.updateMany({ businessId, read: false }, { read: true })
+    } else if (ids && Array.isArray(ids)) {
+      await PFNotification.updateMany({ _id: { $in: ids }, businessId }, { read: true })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Notifications POST error:', error)
+    return NextResponse.json({ error: 'Failed to update notifications' }, { status: 500 })
+  }
+}
