@@ -83,3 +83,46 @@ export interface CreateFundAccountBankPayload {
 }
 
 export interface CreateFundAccountVPAPayload {
+  contact_id: string
+  account_type: 'vpa'
+  vpa: {
+    address: string // UPI ID
+  }
+}
+
+export interface RazorpayFundAccount {
+  id: string
+  entity: string
+  contact_id: string
+  account_type: string
+  active: boolean
+}
+
+export async function createFundAccount(
+  payload: CreateFundAccountBankPayload | CreateFundAccountVPAPayload
+): Promise<RazorpayFundAccount> {
+  if (PAYOUT_MODE === 'simulation') {
+    return {
+      id: generateSimId('fa'),
+      entity: 'fund_account',
+      contact_id: payload.contact_id,
+      account_type: payload.account_type,
+      active: true,
+    }
+  }
+
+  const res = await fetch(`${BASE_URL}/fund_accounts`, {
+    method: 'POST',
+    headers: { 'Authorization': getAuthHeader(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(`Razorpay createFundAccount failed: ${await res.text()}`)
+  return res.json()
+}
+
+// ------- PAYOUTS -------
+
+export interface CreatePayoutPayload {
+  fund_account_id: string
+  amount: number // in paise (₹1 = 100 paise)
+  currency: 'INR'
