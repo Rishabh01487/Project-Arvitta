@@ -25,3 +25,30 @@ export function NotificationsView() {
     await authFetch('/api/notifications', { method: 'PUT' })
     load(); refreshUnread()
   }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-5 float-in">
+        <div>
+          <h2 className="heading text-2xl">Notifications</h2>
+          <p className="body-text text-xs mt-0.5">
+            {unread > 0 ? `${unread} unread` : 'All caught up'}
+          </p>
+        </div>
+        {unread > 0 && <button className="av-btn av-btn-ghost py-1.5 px-3 text-xs" onClick={markAllRead}>Mark all read</button>}
+      </div>
+
+      {notifs.length === 0 ? (
+        <div className="glass p-8 text-center float-in fd-1">
+          <p className="text-3xl mb-2.5" style={{ color: 'var(--color-av-blue-light)' }}>◉</p>
+          <p className="body-text text-xs font-semibold">No notifications</p>
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {notifs.map((n, i) => (
+            <div key={n._id} className={`glass-card p-4 shine float-in fd-${Math.min(i + 1, 4)}`}
+              style={{
+                borderColor: !n.read ? 'rgba(56, 189, 248, 0.15)' : undefined,
+                boxShadow: !n.read ? '0 0 16px rgba(56, 189, 248, 0.04)' : undefined,
+              }}>
+              <div className="flex items-start gap-3">
