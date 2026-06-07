@@ -103,3 +103,38 @@ export function AppShell() {
                 style={{
                   fontFamily: 'var(--font-body)', fontSize: '0.8rem', fontWeight: active ? 700 : 500,
                   background: active ? 'rgba(56,189,248,0.08)' : 'transparent',
+                  color: active ? 'var(--color-av-white)' : 'var(--color-av-gray)',
+                  borderLeft: active ? '2px solid var(--color-av-blue-light)' : '2px solid transparent',
+                }}>
+                <span style={{ fontSize: '0.92rem', opacity: active ? 1 : 0.5 }}>{item.icon}</span>
+                {item.label}
+                {item.id === 'notifications' && unreadCount > 0 && (
+                  <span className="ml-auto w-5 h-5 rounded-full text-[9px] font-bold flex items-center justify-center"
+                    style={{ background: 'var(--color-av-blue)', color: '#fff', boxShadow: '0 0 10px rgba(0,132,255,0.3)' }}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </nav>
+
+        <div className="mx-5 accent-line" />
+
+        {/* User */}
+        <div className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs"
+              style={{
+                background: 'linear-gradient(135deg, rgba(56,189,248,0.12), rgba(0,132,255,0.08))',
+                border: '1px solid rgba(56,189,248,0.12)',
+                fontFamily: 'var(--font-display)', fontWeight: 700,
+                color: 'var(--color-av-white)',
+              }}>
+              {business?.name?.charAt(0) || '?'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--color-av-white-80)' }} className="truncate">{business?.name}</p>
+              <p className="text-[10px] truncate" style={{ color: 'var(--color-av-gray-dim)' }}>{business?.email}</p>
+            </div>
+            <button onClick={logout} className="p-2 rounded-lg" style={{ color: 'var(--color-av-gray-dim)' }}
