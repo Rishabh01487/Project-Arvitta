@@ -186,3 +186,49 @@ export function PaymentView() {
                     </div>
                     {isSelected && (
                       <input type="number" className="av-input w-24 text-right py-1 px-2 text-xs" value={selected[s._id]?.amount ?? 0}
+                        onChange={e => setSelected(p => ({ ...p, [s._id]: { ...p[s._id], amount: parseInt(e.target.value) || 0 } }))} />
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {selectedCount > 0 && (
+            <button className="av-btn av-btn-primary w-full py-3 mt-5 text-sm shine"
+              onClick={() => setShowPin(true)} disabled={totalSelected <= 0 || totalSelected > (account?.balance ?? 0)}>
+              💸 Pay {selectedCount} Supplier(s) — {fmtCur(totalSelected)}
+            </button>
+          )}
+        </>
+      )}
+
+      {/* PIN Modal */}
+      {showPin && (
+        <div className="modal-overlay" onClick={() => { setShowPin(false); setPin('') }}>
+          <div className="modal-content" style={{ padding: '20px', maxWidth: '380px' }} onClick={e => e.stopPropagation()}>
+            <div className="text-center mb-5">
+              <div className="w-12 h-12 mx-auto mb-3.5 rounded-2xl flex items-center justify-center"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(56, 189, 248, 0.05))',
+                  border: '1px solid rgba(56, 189, 248, 0.2)',
+                }}>
+                <span className="text-xl">🔐</span>
+              </div>
+              <h3 className="heading text-base">Authorize Payment</h3>
+              <p className="body-text text-xs mt-1.5">
+                Confirm {fmtCur(totalSelected)} to {selectedCount} supplier(s)
+              </p>
+            </div>
+            {error && <div className="p-2.5 rounded-xl text-xs mb-3 font-semibold" style={{ background: 'rgba(255,107,138,0.08)', color: 'var(--color-av-danger)', border: '1px solid rgba(255,107,138,0.2)' }}>{error}</div>}
+            <input className="av-input text-center text-xl tracking-[0.5em] mb-4 py-2" type="password" maxLength={4} placeholder="• • • •"
+              value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, ''))} autoFocus />
+            <button className="av-btn av-btn-primary w-full py-2.5" onClick={executePay} disabled={pin.length !== 4 || paying}>
+              {paying ? <><div className="spinner"></div> Processing...</> : 'Confirm & Pay'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
