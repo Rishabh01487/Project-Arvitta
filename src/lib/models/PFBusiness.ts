@@ -29,3 +29,17 @@ const PFBusinessSchema = new Schema<IPFBusiness>({
   phone: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   gstin: { type: String },
+  address: { type: String, required: true },
+  pin: { type: String, required: true }, // hashed 4-digit PIN
+  bankAccount: {
+    accountNumber: String,
+    ifscCode: String,
+    bankName: String,
+    holderName: String,
+    verified: { type: Boolean, default: false },
+  },
+  razorpayContactId: String,
+  razorpayFundAccountId: String,
+}, { timestamps: true })
+
+export default mongoose.models.PFBusiness || mongoose.model<IPFBusiness>('PFBusiness', PFBusinessSchema)
