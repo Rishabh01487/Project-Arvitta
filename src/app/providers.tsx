@@ -82,3 +82,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (e) { console.error('refreshAccount error:', e) }
   }, [authFetch])
+
+  const refreshNotifications = useCallback(async () => {
+    try {
+      const res = await authFetch('/api/notifications')
+      if (res.ok) {
+        const data = await res.json()
+        setNotifications(data.notifications)
+        setUnreadCount(data.unreadCount)
+      }
+    } catch (e) { console.error('refreshNotifications error:', e) }
+  }, [authFetch])
+
+  // Init: check for stored token
+  useEffect(() => {
+    const stored = localStorage.getItem('pf_token')
+    if (stored) {
+      setToken(stored)
+      // Fetch profile
+      fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${stored}` },
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.business) {
+            setBusiness(data.business)
+            setAccount(data.account)
+          } else {
+            localStorage.removeItem('pf_token')
+          }
+        })
+        .catch(() => localStorage.removeItem('pf_token'))
+        .finally(() => setIsLoading(false))
+    } else {
+      setIsLoading(false)
+    }
+  }, [])
+
+  // Poll notifications every 30s when logged in
+  useEffect(() => {
+    if (!token) return
+    refreshNotifications()
