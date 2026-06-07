@@ -40,3 +40,23 @@ const PFSupplierSchema = new Schema<IPFSupplier>({
     enum: ['critical', 'high', 'medium', 'low'],
     default: 'medium',
   },
+  notes: { type: String },
+  totalDue: { type: Number, default: 0, min: 0 },
+  totalPaid: { type: Number, default: 0 },
+  lastPaidAt: { type: Date, default: null },
+  bankDetails: {
+    accountNumber: String,
+    ifscCode: String,
+    bankName: String,
+    holderName: String,
+    upiId: String,
+    razorpayContactId: String,
+    razorpayFundAccountId: String,
+  },
+  isActive: { type: Boolean, default: true },
+}, { timestamps: true })
+
+PFSupplierSchema.index({ businessId: 1, priority: 1 })
+PFSupplierSchema.index({ businessId: 1, isActive: 1, totalDue: -1 })
+
+export default mongoose.models.PFSupplier || mongoose.model<IPFSupplier>('PFSupplier', PFSupplierSchema)
