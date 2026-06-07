@@ -41,3 +41,45 @@ export interface CreateContactPayload {
 export interface RazorpayContact {
   id: string
   entity: string
+  name: string
+  contact: string
+  email?: string
+  type: string
+  active: boolean
+}
+
+export async function createContact(payload: CreateContactPayload): Promise<RazorpayContact> {
+  if (PAYOUT_MODE === 'simulation') {
+    return {
+      id: generateSimId('cont'),
+      entity: 'contact',
+      name: payload.name,
+      contact: payload.contact,
+      email: payload.email,
+      type: 'vendor',
+      active: true,
+    }
+  }
+
+  const res = await fetch(`${BASE_URL}/contacts`, {
+    method: 'POST',
+    headers: { 'Authorization': getAuthHeader(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(`Razorpay createContact failed: ${await res.text()}`)
+  return res.json()
+}
+
+// ------- FUND ACCOUNTS -------
+
+export interface CreateFundAccountBankPayload {
+  contact_id: string
+  account_type: 'bank_account'
+  bank_account: {
+    name: string
+    ifsc: string
+    account_number: string
+  }
+}
+
+export interface CreateFundAccountVPAPayload {
