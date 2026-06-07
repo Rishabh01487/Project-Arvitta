@@ -46,3 +46,26 @@ export function SettingsView() {
               <p className="text-xs font-semibold text-white/80">{item.value}</p>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Change PIN */}
+      <div className="glass p-5 mt-5 float-in fd-2">
+        <h3 className="heading text-base mb-4">Change Transaction PIN</h3>
+        {msg && <div className="p-3 rounded-xl text-xs mb-3 font-semibold" style={{ background: 'rgba(56, 189, 248, 0.08)', color: 'var(--color-av-blue-light)', border: '1px solid rgba(56, 189, 248, 0.2)' }}>{msg}</div>}
+        {err && <div className="p-3 rounded-xl text-xs mb-3 font-semibold" style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'var(--color-av-gray)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>{err}</div>}
+        <form onSubmit={changePin} className="flex flex-col gap-3.5 max-w-xs">
+          <div>
+            <label className="label block mb-1">Current PIN</label>
+            <input type="password" className="av-input py-2 px-3 text-xs" maxLength={4} placeholder="••••" value={oldPin} onChange={e => setOldPin(e.target.value.replace(/\D/g, ''))} required />
+          </div>
+          <div>
+            <label className="label block mb-1">New PIN</label>
+            <input type="password" className="av-input py-2 px-3 text-xs" maxLength={4} placeholder="••••" value={newPin} onChange={e => setNewPin(e.target.value.replace(/\D/g, ''))} required />
+          </div>
+          <button type="submit" className="av-btn av-btn-primary py-2 px-4 shine">Update PIN</button>
+        </form>
+      </div>
+    </div>
+  )
+}
