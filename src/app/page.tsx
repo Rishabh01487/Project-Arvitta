@@ -134,3 +134,36 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setError('')
+    if (form.pin.length !== 4 || !/^\d{4}$/.test(form.pin)) { setError('PIN must be 4 digits'); return }
+    setLoading(true)
+    const res = await register(form)
+    if (!res.success) setError(res.error || 'Registration failed')
+    setLoading(false)
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 text-left">
+      {error && <div className="p-2.5 rounded-xl text-xs font-semibold" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-av-gray)', border: '1px solid rgba(255,255,255,0.1)' }}>{error}</div>}
+      <div className="grid grid-cols-2 gap-2.5">
+        <div><label className="label block mb-1">Business Name</label><input className="av-input py-1.5 px-2.5 text-xs" placeholder="Agri Fresh Foods" value={form.name} onChange={e => set('name', e.target.value)} required /></div>
+        <div><label className="label block mb-1">Owner</label><input className="av-input py-1.5 px-2.5 text-xs" placeholder="Rajesh Kumar" value={form.ownerName} onChange={e => set('ownerName', e.target.value)} required /></div>
+      </div>
+      <div className="grid grid-cols-2 gap-2.5">
+        <div><label className="label block mb-1">Email</label><input type="email" className="av-input py-1.5 px-2.5 text-xs" placeholder="you@biz.com" value={form.email} onChange={e => set('email', e.target.value)} required /></div>
+        <div><label className="label block mb-1">Phone</label><input className="av-input py-1.5 px-2.5 text-xs" placeholder="9876543210" value={form.phone} onChange={e => set('phone', e.target.value)} required /></div>
+      </div>
+      <div><label className="label block mb-1">Address</label><input className="av-input py-1.5 px-2.5 text-xs" placeholder="MIDC, Pune, Maharashtra" value={form.address} onChange={e => set('address', e.target.value)} required /></div>
+      <div className="grid grid-cols-3 gap-2.5">
+        <div><label className="label block mb-1">Password</label><input type="password" className="av-input py-1.5 px-2.5 text-xs" placeholder="••••••" value={form.password} onChange={e => set('password', e.target.value)} required /></div>
+        <div><label className="label block mb-1">4-Digit PIN</label><input className="av-input py-1.5 px-2.5 text-xs" placeholder="1234" maxLength={4} value={form.pin} onChange={e => set('pin', e.target.value.replace(/\D/g, ''))} required /></div>
+        <div><label className="label block mb-1">GSTIN</label><input className="av-input py-1.5 px-2.5 text-xs" placeholder="Optional" value={form.gstin} onChange={e => set('gstin', e.target.value)} /></div>
+      </div>
+      <button type="submit" className="av-btn av-btn-primary w-full py-2.5 mt-1" disabled={loading}>
+        {loading ? <><div className="spinner"></div> Creating...</> : 'Create Account →'}
+      </button>
+      <p className="text-center text-xs mt-1" style={{ color: 'var(--color-av-gray-dim)' }}>
+        Already have an account? <button type="button" onClick={onSwitch} style={{ color: 'var(--color-av-blue-light)', fontWeight: 700 }}>Sign In</button>
+      </p>
+    </form>
+  )
+}
