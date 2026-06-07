@@ -223,3 +223,78 @@ export function DashboardView({ onNavigate }: { onNavigate: (v: string) => void 
                 ))}
               </div>
               <div className="flex justify-between mt-4 pt-3.5" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <span className="body-text text-xs">Total suggested</span>
+                <span className="text-xs font-bold" style={{ color: 'var(--color-av-blue-light)', fontFamily: 'var(--font-display)' }}>{fmtCur(suggestions.totalPayout)}</span>
+              </div>
+            </div>
+          ) : (
+            /* Onboarding Checklist (Fills suggestions when suggestions list is empty) */
+            <div className="glass p-5 float-in fd-4">
+              <h3 className="heading text-sm mb-3.5 flex items-center gap-2">
+                <span>🏁</span> Getting Started Checklist
+              </h3>
+              <div className="space-y-2.5">
+                {[
+                  { step: '1', title: 'Register Business Account', desc: 'Completed during onboarding process.', done: true },
+                  { step: '2', title: 'Add Suppliers & Bank Profiles', desc: 'Populate your supplier ledger to map account details.', done: stats?.supplierCount ? stats.supplierCount > 0 : false, action: () => onNavigate('suppliers'), actionText: 'Go to Ledger' },
+                  { step: '3', title: 'Simulate Bank Credit', desc: 'Credit your debit wallet to trigger auto-matching.', done: account?.totalCredited ? account.totalCredited > 0 : false, action: () => setShowCredit(true), actionText: 'Credit Wallet' },
+                  { step: '4', title: 'Execute Automated Payouts', desc: 'Approve suggested payout batches using your security PIN.', done: account?.totalDebited ? account.totalDebited > 0 : false, action: () => onNavigate('pay'), actionText: 'Run Payout' }
+                ].map((s, idx) => (
+                  <div key={idx} className="flex gap-3 p-3.5 rounded-xl transition-all" style={{ background: s.done ? 'rgba(56,189,248,0.02)' : 'rgba(255,255,255,0.01)', border: s.done ? '1px solid rgba(56,189,248,0.1)' : '1px solid rgba(255,255,255,0.03)' }}>
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0" style={{ 
+                      background: s.done ? 'var(--color-av-blue-light)' : 'rgba(255,255,255,0.05)', 
+                      color: s.done ? '#090b11' : 'var(--color-av-gray)' 
+                    }}>
+                      {s.done ? '✓' : s.step}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold truncate" style={{ color: s.done ? 'var(--color-av-white)' : 'var(--color-av-gray)' }}>{s.title}</p>
+                      <p className="body-text text-[11px] mt-0.5 leading-normal">{s.desc}</p>
+                      {!s.done && s.action && (
+                        <button onClick={s.action} className="mt-1 text-[11px] font-bold text-left cursor-pointer" style={{ color: 'var(--color-av-blue-light)' }}>
+                          {s.actionText} →
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT COLUMN (1 Col width, sidebar panel) */}
+        <div className="space-y-6">
+          
+          {/* Quick Actions Panel */}
+          <div className="glass-card p-5 float-in fd-3">
+            <h3 className="heading text-base mb-4">Quick Actions</h3>
+            <div className="flex flex-col gap-2.5">
+              <button className="av-btn av-btn-primary w-full justify-start py-2.5 shine cursor-pointer" onClick={() => setShowCredit(true)}>
+                <span className="text-base">💰</span> Credit Wallet
+              </button>
+              <button className="av-btn av-btn-ghost w-full justify-start py-2.5 cursor-pointer" onClick={() => onNavigate('suppliers')}>
+                <span className="text-base">➕</span> Add New Supplier
+              </button>
+              <button className="av-btn av-btn-ghost w-full justify-start py-2.5 cursor-pointer" onClick={() => onNavigate('pay')}>
+                <span className="text-base">💸</span> Run Batch Payout
+              </button>
+              <button className="av-btn av-btn-ghost w-full justify-start py-2.5 cursor-pointer" onClick={() => onNavigate('settings')}>
+                <span className="text-base">🔒</span> Update Security PIN
+              </button>
+              <button className="av-btn av-btn-ghost w-full justify-start py-2.5 cursor-pointer" style={{ color: 'var(--color-av-blue-light)', border: '1px solid rgba(56, 189, 248, 0.3)' }} onClick={handleSeed} disabled={seeding}>
+                <span className="text-base">🚀</span> {seeding ? 'Seeding...' : 'Load Demo Data'}
+              </button>
+            </div>
+          </div>
+
+          {/* Real-time System Activity Log */}
+          <div className="glass-card p-5 float-in fd-4">
+            <div className="flex items-center justify-between mb-3.5">
+              <h3 className="heading text-sm">Security Auditing</h3>
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
+            </div>
+            <div className="space-y-2 font-mono text-[9px] tracking-wide" style={{ color: 'var(--color-av-gray-dim)' }}>
+              <div className="p-2 rounded bg-black/20 border border-white/5 flex items-center justify-between">
+                <span>API Gateway Handshake</span>
+                <span className="text-sky-400 font-bold">VERIFIED</span>
