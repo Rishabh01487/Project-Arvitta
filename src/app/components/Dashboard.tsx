@@ -148,3 +148,78 @@ export function DashboardView({ onNavigate }: { onNavigate: (v: string) => void 
               <div key={s.label} className={`glass-card p-4 shine float-in ${s.delay}`}>
                 <p className="label mb-1.5">{s.label}</p>
                 <p className="stat-num text-lg" style={{ color: s.color }}>{s.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Analytics Graphic (Fills void beautifully) */}
+          <div className="glass-card p-5 float-in fd-3">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="heading text-sm">Cash Flow Analytics</h3>
+                <p className="body-text text-xs">Simulated weekly payout activity</p>
+              </div>
+              <span className="badge badge-low">Live Sync</span>
+            </div>
+            <div className="relative h-32 w-full">
+              {/* SVG Line Chart */}
+              <svg className="w-full h-full" viewBox="0 0 500 150" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--color-av-blue-light)" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="var(--color-av-blue-light)" stopOpacity="0.00" />
+                  </linearGradient>
+                  <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="var(--color-av-blue-light)" />
+                    <stop offset="50%" stopColor="var(--color-av-blue)" />
+                    <stop offset="100%" stopColor="var(--color-av-white)" />
+                  </linearGradient>
+                </defs>
+                {/* Grid Lines */}
+                <line x1="0" y1="30" x2="500" y2="30" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                <line x1="0" y1="75" x2="500" y2="75" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                <line x1="0" y1="120" x2="500" y2="120" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                
+                {/* Area under path */}
+                <path d="M 0 150 L 0 120 Q 75 80 150 100 T 300 45 T 450 70 L 500 60 L 500 150 Z" fill="url(#chartGrad)" />
+                
+                {/* Stroke path */}
+                <path d="M 0 120 Q 75 80 150 100 T 300 45 T 450 70 L 500 60" fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" />
+                
+                {/* Points */}
+                <circle cx="150" cy="100" r="4" fill="var(--color-av-blue-light)" stroke="var(--color-av-bg)" strokeWidth="2" />
+                <circle cx="300" cy="45" r="4" fill="var(--color-av-white)" stroke="var(--color-av-bg)" strokeWidth="2" />
+                <circle cx="500" cy="60" r="4" fill="var(--color-av-blue-light)" stroke="var(--color-av-bg)" strokeWidth="2" />
+              </svg>
+            </div>
+            <div className="flex justify-between mt-3 text-[9px] text-white/40 font-semibold uppercase tracking-wider">
+              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+          </div>
+
+          {/* Smart Payout Suggestions */}
+          {suggestions && suggestions.suggestedSuppliers.length > 0 ? (
+            <div className="glass p-5 glow-ring float-in fd-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl" style={{ color: 'var(--color-av-blue-light)' }}>⚡</span>
+                  <h3 className="heading text-base">Smart Suggestions</h3>
+                </div>
+                <button className="av-btn av-btn-primary text-xs py-1.5 px-3" onClick={() => onNavigate('pay')}>Pay Now →</button>
+              </div>
+              <p className="body-text text-xs mb-4">
+                Based on your balance of {fmtCur(suggestions.balance)}, you can pay {suggestions.suggestedSuppliers.length} supplier(s):
+              </p>
+              <div className="space-y-2">
+                {suggestions.suggestedSuppliers.slice(0, 5).map(s => (
+                  <div key={s._id} className="flex items-center justify-between py-2.5 px-3.5 rounded-xl shine"
+                    style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                    <div className="flex items-center gap-3">
+                      <span className={`badge badge-${s.priority}`}>{s.priority}</span>
+                      <span className="text-xs font-semibold text-white/80">{s.name}</span>
+                    </div>
+                    <span className="text-xs font-bold text-white/90" style={{ fontFamily: 'var(--font-display)' }}>{fmtCur(s.suggestedAmount)}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between mt-4 pt-3.5" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
