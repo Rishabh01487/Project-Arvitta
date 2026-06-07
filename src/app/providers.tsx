@@ -123,3 +123,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!token) return
     refreshNotifications()
+    const interval = setInterval(refreshNotifications, 30000)
+    return () => clearInterval(interval)
+  }, [token, refreshNotifications])
+
+  const login = async (email: string, password: string) => {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setToken(data.token)
+        setBusiness(data.business)
+        localStorage.setItem('pf_token', data.token)
+        // Fetch account
+        setTimeout(() => refreshAccount(), 100)
+        return { success: true }
+      }
+      return { success: false, error: data.error }
+    } catch {
+      return { success: false, error: 'Network error' }
+    }
+  }
+
+  const register = async (formData: Record<string, string>) => {
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setToken(data.token)
+        setBusiness(data.business)
+        localStorage.setItem('pf_token', data.token)
+        setTimeout(() => refreshAccount(), 100)
+        return { success: true }
+      }
+      return { success: false, error: data.error }
