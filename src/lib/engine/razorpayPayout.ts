@@ -126,3 +126,45 @@ export interface CreatePayoutPayload {
   fund_account_id: string
   amount: number // in paise (₹1 = 100 paise)
   currency: 'INR'
+  mode: 'UPI' | 'NEFT' | 'RTGS' | 'IMPS'
+  purpose: 'vendor_bill' | 'payout'
+  queue_if_low_balance?: boolean
+  reference_id?: string
+  narration?: string
+}
+
+export interface RazorpayPayout {
+  id: string
+  entity: string
+  fund_account_id: string
+  amount: number
+  currency: string
+  mode: string
+  purpose: string
+  status: string // 'processing' | 'processed' | 'reversed' | 'failed' | 'queued'
+  utr?: string
+  reference_id?: string
+  narration?: string
+  failure_reason?: string
+}
+
+export async function createPayout(payload: CreatePayoutPayload): Promise<RazorpayPayout> {
+  if (PAYOUT_MODE === 'simulation') {
+    // Simulate a ~2 second processing delay for realism
+    const utr = `UTR${Date.now().toString().slice(-10)}`
+    return {
+      id: generateSimId('pout'),
+      entity: 'payout',
+      fund_account_id: payload.fund_account_id,
+      amount: payload.amount,
+      currency: 'INR',
+      mode: payload.mode,
+      purpose: payload.purpose,
+      status: 'processing', // will be updated via simulated webhook
+      utr,
+      reference_id: payload.reference_id,
+      narration: payload.narration,
+    }
+  }
+
+  const body = {
