@@ -42,3 +42,25 @@ const PRIORITY_ORDER: Record<string, number> = {
  * 2. Greedy fit: include supplier if their totalDue fits within remaining balance
  * 3. Return suggestion list with amounts
  */
+export async function runAutoMatch(businessId: string): Promise<AutoMatchResult> {
+  const account = await PFAccount.findOne({ businessId })
+  if (!account) throw new Error('Account not found')
+
+  const balance = account.balance
+
+  // Get all active suppliers with outstanding dues
+  const suppliers = await PFSupplier.find({
+    businessId,
+    isActive: true,
+    totalDue: { $gt: 0 },
+  }).sort({ lastPaidAt: 1 }) // oldest unpaid first
+
+  // Sort by priority first, then by lastPaidAt (already sorted from DB)
+  const sorted = [...suppliers].sort((a, b) => {
+    const pa = PRIORITY_ORDER[a.priority] ?? 3
+    const pb = PRIORITY_ORDER[b.priority] ?? 3
+    if (pa !== pb) return pa - pb
+    // Within same priority, oldest unpaid first
+    const aTime = a.lastPaidAt ? a.lastPaidAt.getTime() : 0
+    const bTime = b.lastPaidAt ? b.lastPaidAt.getTime() : 0
+    return aTime - bTime
