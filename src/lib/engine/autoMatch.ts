@@ -64,3 +64,25 @@ export async function runAutoMatch(businessId: string): Promise<AutoMatchResult>
     const aTime = a.lastPaidAt ? a.lastPaidAt.getTime() : 0
     const bTime = b.lastPaidAt ? b.lastPaidAt.getTime() : 0
     return aTime - bTime
+  })
+
+  const suggested: MatchedSupplier[] = []
+  let remaining = balance
+  let totalPayout = 0
+  const totalDueAcrossAll = sorted.reduce((sum, s) => sum + s.totalDue, 0)
+  let unpayableCount = 0
+
+  for (const supplier of sorted) {
+    if (supplier.totalDue <= remaining) {
+      suggested.push({
+        _id: supplier._id.toString(),
+        name: supplier.name,
+        phone: supplier.phone,
+        category: supplier.category,
+        priority: supplier.priority,
+        totalDue: supplier.totalDue,
+        suggestedAmount: supplier.totalDue,
+        bankDetails: {
+          accountNumber: supplier.bankDetails?.accountNumber,
+          ifscCode: supplier.bankDetails?.ifscCode,
+          bankName: supplier.bankDetails?.bankName,
