@@ -52,25 +52,23 @@ export function DashboardView({ onNavigate }: { onNavigate: (v: string) => void 
         await loadData()
         setTimeout(() => setToast(''), 5000)
       }
-    } catch (e) {
-      console.error(e)
-    }
+    } catch (e) { console.error(e) }
     setSeeding(false)
   }
 
   const quickAmounts = [100000, 250000, 500000, 750000, 1000000, 1500000]
-  const fmtCur = (n: number) => `₹${(n || 0).toLocaleString('en-IN')}`
+  const fmtCur = (n: number) => `\u20B9${(n || 0).toLocaleString('en-IN')}`
 
   return (
     <div>
       {toast && (
-        <div className="fixed top-5 right-5 z-50 max-w-sm p-4 rounded-2xl toast-in" style={{ background: 'linear-gradient(135deg, rgba(56,189,248,0.12), rgba(56,189,248,0.04))', backdropFilter: 'blur(20px)', border: '1px solid rgba(56,189,248,0.2)', color: 'var(--color-av-white)' }}>
-          <p className="text-sm font-bold" style={{ fontFamily: 'var(--font-body)' }}>💰 {toast}</p>
+        <div className="fixed top-5 right-5 z-50 max-w-sm p-4 rounded-2xl toast-in"
+          style={{ background: 'var(--color-av-glass-strong)', backdropFilter: 'blur(8px)', border: '1px solid var(--color-av-glass-border)', color: 'var(--color-av-text)' }}>
+          <p className="text-sm font-bold" style={{ fontFamily: 'var(--font-body)' }}>{toast}</p>
           <button onClick={() => setToast('')} className="absolute top-2 right-3 opacity-50 hover:opacity-100">✕</button>
         </div>
       )}
 
-      {/* Header */}
       <div className="flex items-center justify-between mb-6 float-in">
         <div>
           <h2 className="heading text-2xl">Dashboard</h2>
@@ -79,44 +77,33 @@ export function DashboardView({ onNavigate }: { onNavigate: (v: string) => void 
         <button className="av-btn av-btn-primary shine" onClick={() => setShowCredit(true)}>+ Credit Account</button>
       </div>
 
-      {/* Main Grid Structure (2 columns main, 1 column sidebar actions) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* LEFT COLUMN (2 Cols width) */}
+
         <div className="lg:col-span-2 space-y-6">
-          
-          {/* ═══ Hero Balance Card (High-End Glassmorphic Design) ═══ */}
-          <div className="glass-crystal p-6 relative overflow-hidden float-in fd-1" 
-               style={{ 
-                 background: 'linear-gradient(135deg, rgba(15,22,55,0.7) 0%, rgba(20,35,80,0.6) 100%)',
-                 border: '1px solid rgba(56,189,248,0.18)',
-                 boxShadow: '0 15px 35px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2), 0 0 50px rgba(35,77,194,0.1)'
+
+          <div className="glass-crystal p-6 relative overflow-hidden float-in fd-1"
+               style={{
+                 background: 'linear-gradient(135deg, #f8f9fb 0%, #f1f2f6 100%)',
+                 border: '1px solid rgba(0,0,0,0.04)',
                }}>
-            {/* Card Grid Pattern */}
-            <div className="absolute inset-0 opacity-10" style={{
-              backgroundImage: 'radial-gradient(rgba(255,255,255,0.15) 1px, transparent 0), radial-gradient(rgba(255,255,255,0.15) 1px, transparent 0)',
+            <div className="absolute inset-0" style={{
+              backgroundImage: 'radial-gradient(rgba(79, 70, 229, 0.03) 1px, transparent 1px)',
               backgroundSize: '16px 16px',
-              backgroundPosition: '0 0, 8px 8px'
             }} />
-            
-            <div className="absolute top-0 right-0 w-80 h-80 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(56,189,248,0.12) 0%, transparent 70%)', transform: 'translate(25%,-35%)' }} />
-            <div className="absolute bottom-0 left-0 w-60 h-60 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(35,77,194,0.08) 0%, transparent 70%)', transform: 'translate(-25%,35%)' }} />
+
+            <div className="absolute top-0 right-0 w-80 h-80 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(79, 70, 229, 0.04) 0%, transparent 70%)', transform: 'translate(25%,-35%)' }} />
+            <div className="absolute bottom-0 left-0 w-60 h-60 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(79, 70, 229, 0.03) 0%, transparent 70%)', transform: 'translate(-25%,35%)' }} />
 
             <div className="flex justify-between items-start mb-8 relative z-10">
               <div>
-                <p className="label mb-1" style={{ letterSpacing: '0.2em', color: 'var(--color-av-blue-light)' }}>Corporate Debit Wallet</p>
-                <p className="heading text-xs opacity-60">Arvitta Financial Systems</p>
-              </div>
-              {/* Microchip Graphic */}
-              <div className="w-12 h-9 rounded-lg bg-gradient-to-br from-blue-300/20 to-blue-500/10 border border-blue-400/20 relative flex items-center justify-center">
-                <div className="absolute inset-2 border-r border-b border-blue-400/20" />
-                <div className="absolute inset-3 border-l border-t border-blue-400/20" />
+                <p className="label mb-1" style={{ letterSpacing: '0.2em', color: 'var(--color-av-accent)' }}>Corporate Debit Wallet</p>
+                <p className="heading text-xs" style={{ color: 'var(--color-av-text-muted)' }}>Arvitta Financial Systems</p>
               </div>
             </div>
 
             <div className="relative z-10 mb-6">
-              <p className="label opacity-60 mb-1">Available Balance</p>
-              <p className="stat-num text-3xl" style={{ color: 'var(--color-av-white)', textShadow: '0 0 40px rgba(56,189,248,0.2)' }}>
+              <p className="label mb-1" style={{ color: 'var(--color-av-text-muted)' }}>Available Balance</p>
+              <p className="stat-num text-3xl" style={{ color: 'var(--color-av-text)' }}>
                 {fmtCur(account?.balance ?? 0)}
               </p>
             </div>
@@ -124,26 +111,22 @@ export function DashboardView({ onNavigate }: { onNavigate: (v: string) => void 
             <div className="flex justify-between items-end relative z-10">
               <div className="flex gap-8">
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-white/40">Business Name</p>
-                  <p className="text-xs font-bold mt-1 text-white/90" style={{ fontFamily: 'var(--font-body)' }}>{business?.name || 'Agri Fresh Foods'}</p>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-av-text-muted)' }}>Business Name</p>
+                  <p className="text-xs font-bold mt-1" style={{ color: 'var(--color-av-text-secondary)' }}>{business?.name || 'Agri Fresh Foods'}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-white/40">Status</p>
-                  <p className="text-xs font-bold mt-1 text-white/90" style={{ color: 'var(--color-av-blue-light)' }}>ACTIVE</p>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-av-text-muted)' }}>Status</p>
+                  <p className="text-xs font-bold mt-1" style={{ color: 'var(--color-av-accent)' }}>ACTIVE</p>
                 </div>
-              </div>
-              <div className="text-right">
-                <p className="text-[9px] uppercase tracking-wider text-white/40 font-mono">•••• •••• •••• {business?.phone?.slice(-4) || '8839'}</p>
               </div>
             </div>
           </div>
 
-          {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { label: 'Total Outstanding', value: fmtCur(stats?.totalDue ?? 0), color: 'var(--color-av-danger)', delay: 'fd-2' },
-              { label: 'Active Suppliers', value: stats?.supplierCount ?? 0, color: 'var(--color-av-blue-light)', delay: 'fd-3' },
-              { label: 'Suppliers With Dues', value: stats?.suppliersWithDue ?? 0, color: 'var(--color-av-white-80)', delay: 'fd-4' },
+              { label: 'Active Suppliers', value: stats?.supplierCount ?? 0, color: 'var(--color-av-text)', delay: 'fd-3' },
+              { label: 'Suppliers With Dues', value: stats?.suppliersWithDue ?? 0, color: 'var(--color-av-text-secondary)', delay: 'fd-4' },
             ].map(s => (
               <div key={s.label} className={`glass-card p-4 shine float-in ${s.delay}`}>
                 <p className="label mb-1.5">{s.label}</p>
@@ -152,7 +135,6 @@ export function DashboardView({ onNavigate }: { onNavigate: (v: string) => void 
             ))}
           </div>
 
-          {/* Analytics Graphic (Fills void beautifully) */}
           <div className="glass-card p-5 float-in fd-3">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -162,47 +144,33 @@ export function DashboardView({ onNavigate }: { onNavigate: (v: string) => void 
               <span className="badge badge-low">Live Sync</span>
             </div>
             <div className="relative h-32 w-full">
-              {/* SVG Line Chart */}
               <svg className="w-full h-full" viewBox="0 0 500 150" preserveAspectRatio="none">
                 <defs>
                   <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-av-blue-light)" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="var(--color-av-blue-light)" stopOpacity="0.00" />
-                  </linearGradient>
-                  <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="var(--color-av-blue-light)" />
-                    <stop offset="50%" stopColor="var(--color-av-blue)" />
-                    <stop offset="100%" stopColor="var(--color-av-white)" />
+                    <stop offset="0%" stopColor="var(--color-av-accent)" stopOpacity="0.12" />
+                    <stop offset="100%" stopColor="var(--color-av-accent)" stopOpacity="0.00" />
                   </linearGradient>
                 </defs>
-                {/* Grid Lines */}
-                <line x1="0" y1="30" x2="500" y2="30" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                <line x1="0" y1="75" x2="500" y2="75" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                <line x1="0" y1="120" x2="500" y2="120" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                
-                {/* Area under path */}
+                <line x1="0" y1="30" x2="500" y2="30" stroke="rgba(0,0,0,0.03)" strokeWidth="1" />
+                <line x1="0" y1="75" x2="500" y2="75" stroke="rgba(0,0,0,0.03)" strokeWidth="1" />
+                <line x1="0" y1="120" x2="500" y2="120" stroke="rgba(0,0,0,0.03)" strokeWidth="1" />
                 <path d="M 0 150 L 0 120 Q 75 80 150 100 T 300 45 T 450 70 L 500 60 L 500 150 Z" fill="url(#chartGrad)" />
-                
-                {/* Stroke path */}
-                <path d="M 0 120 Q 75 80 150 100 T 300 45 T 450 70 L 500 60" fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" />
-                
-                {/* Points */}
-                <circle cx="150" cy="100" r="4" fill="var(--color-av-blue-light)" stroke="var(--color-av-bg)" strokeWidth="2" />
-                <circle cx="300" cy="45" r="4" fill="var(--color-av-white)" stroke="var(--color-av-bg)" strokeWidth="2" />
-                <circle cx="500" cy="60" r="4" fill="var(--color-av-blue-light)" stroke="var(--color-av-bg)" strokeWidth="2" />
+                <path d="M 0 120 Q 75 80 150 100 T 300 45 T 450 70 L 500 60" fill="none" stroke="var(--color-av-accent)" strokeWidth="3" strokeLinecap="round" />
+                <circle cx="150" cy="100" r="4" fill="var(--color-av-accent)" stroke="#fff" strokeWidth="2" />
+                <circle cx="300" cy="45" r="4" fill="var(--color-av-accent)" stroke="#fff" strokeWidth="2" />
+                <circle cx="500" cy="60" r="4" fill="var(--color-av-accent)" stroke="#fff" strokeWidth="2" />
               </svg>
             </div>
-            <div className="flex justify-between mt-3 text-[9px] text-white/40 font-semibold uppercase tracking-wider">
+            <div className="flex justify-between mt-3 text-[9px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-av-text-muted)' }}>
               <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
             </div>
           </div>
 
-          {/* Smart Payout Suggestions */}
           {suggestions && suggestions.suggestedSuppliers.length > 0 ? (
             <div className="glass p-5 glow-ring float-in fd-4">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-xl" style={{ color: 'var(--color-av-blue-light)' }}>⚡</span>
+                  <span className="text-xl" style={{ color: 'var(--color-av-accent)' }}>⚡</span>
                   <h3 className="heading text-base">Smart Suggestions</h3>
                 </div>
                 <button className="av-btn av-btn-primary text-xs py-1.5 px-3" onClick={() => onNavigate('pay')}>Pay Now →</button>
@@ -212,26 +180,25 @@ export function DashboardView({ onNavigate }: { onNavigate: (v: string) => void 
               </p>
               <div className="space-y-2">
                 {suggestions.suggestedSuppliers.slice(0, 5).map(s => (
-                  <div key={s._id} className="flex items-center justify-between py-2.5 px-3.5 rounded-xl shine"
-                    style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                  <div key={s._id} className="flex items-center justify-between py-2.5 px-3.5 rounded-xl"
+                    style={{ background: 'var(--color-av-bg)', border: '1px solid var(--color-av-glass-border)' }}>
                     <div className="flex items-center gap-3">
                       <span className={`badge badge-${s.priority}`}>{s.priority}</span>
-                      <span className="text-xs font-semibold text-white/80">{s.name}</span>
+                      <span className="text-xs font-semibold" style={{ color: 'var(--color-av-text-secondary)' }}>{s.name}</span>
                     </div>
-                    <span className="text-xs font-bold text-white/90" style={{ fontFamily: 'var(--font-display)' }}>{fmtCur(s.suggestedAmount)}</span>
+                    <span className="text-xs font-bold" style={{ color: 'var(--color-av-text)', fontFamily: 'var(--font-display)' }}>{fmtCur(s.suggestedAmount)}</span>
                   </div>
                 ))}
               </div>
-              <div className="flex justify-between mt-4 pt-3.5" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="flex justify-between mt-4 pt-3.5" style={{ borderTop: '1px solid var(--color-av-glass-border)' }}>
                 <span className="body-text text-xs">Total suggested</span>
-                <span className="text-xs font-bold" style={{ color: 'var(--color-av-blue-light)', fontFamily: 'var(--font-display)' }}>{fmtCur(suggestions.totalPayout)}</span>
+                <span className="text-xs font-bold" style={{ color: 'var(--color-av-accent)', fontFamily: 'var(--font-display)' }}>{fmtCur(suggestions.totalPayout)}</span>
               </div>
             </div>
           ) : (
-            /* Onboarding Checklist (Fills suggestions when suggestions list is empty) */
             <div className="glass p-5 float-in fd-4">
               <h3 className="heading text-sm mb-3.5 flex items-center gap-2">
-                <span>🏁</span> Getting Started Checklist
+                Getting Started Checklist
               </h3>
               <div className="space-y-2.5">
                 {[
@@ -240,18 +207,18 @@ export function DashboardView({ onNavigate }: { onNavigate: (v: string) => void 
                   { step: '3', title: 'Simulate Bank Credit', desc: 'Credit your debit wallet to trigger auto-matching.', done: account?.totalCredited ? account.totalCredited > 0 : false, action: () => setShowCredit(true), actionText: 'Credit Wallet' },
                   { step: '4', title: 'Execute Automated Payouts', desc: 'Approve suggested payout batches using your security PIN.', done: account?.totalDebited ? account.totalDebited > 0 : false, action: () => onNavigate('pay'), actionText: 'Run Payout' }
                 ].map((s, idx) => (
-                  <div key={idx} className="flex gap-3 p-3.5 rounded-xl transition-all" style={{ background: s.done ? 'rgba(56,189,248,0.02)' : 'rgba(255,255,255,0.01)', border: s.done ? '1px solid rgba(56,189,248,0.1)' : '1px solid rgba(255,255,255,0.03)' }}>
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0" style={{ 
-                      background: s.done ? 'var(--color-av-blue-light)' : 'rgba(255,255,255,0.05)', 
-                      color: s.done ? '#090b11' : 'var(--color-av-gray)' 
+                  <div key={idx} className="flex gap-3 p-3.5 rounded-xl transition-all" style={{ background: s.done ? 'var(--color-av-accent-bg)' : 'var(--color-av-bg)', border: s.done ? '1px solid var(--color-av-accent-border)' : '1px solid var(--color-av-glass-border)' }}>
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0" style={{
+                      background: s.done ? 'var(--color-av-accent)' : 'rgba(0,0,0,0.05)',
+                      color: s.done ? '#fff' : 'var(--color-av-text-muted)'
                     }}>
                       {s.done ? '✓' : s.step}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold truncate" style={{ color: s.done ? 'var(--color-av-white)' : 'var(--color-av-gray)' }}>{s.title}</p>
+                      <p className="text-xs font-bold truncate" style={{ color: s.done ? 'var(--color-av-text)' : 'var(--color-av-text-secondary)' }}>{s.title}</p>
                       <p className="body-text text-[11px] mt-0.5 leading-normal">{s.desc}</p>
                       {!s.done && s.action && (
-                        <button onClick={s.action} className="mt-1 text-[11px] font-bold text-left cursor-pointer" style={{ color: 'var(--color-av-blue-light)' }}>
+                        <button onClick={s.action} className="mt-1 text-[11px] font-bold text-left" style={{ color: 'var(--color-av-accent)' }}>
                           {s.actionText} →
                         </button>
                       )}
@@ -263,69 +230,65 @@ export function DashboardView({ onNavigate }: { onNavigate: (v: string) => void 
           )}
         </div>
 
-        {/* RIGHT COLUMN (1 Col width, sidebar panel) */}
         <div className="space-y-6">
-          
-          {/* Quick Actions Panel */}
+
           <div className="glass-card p-5 float-in fd-3">
             <h3 className="heading text-base mb-4">Quick Actions</h3>
             <div className="flex flex-col gap-2.5">
-              <button className="av-btn av-btn-primary w-full justify-start py-2.5 shine cursor-pointer" onClick={() => setShowCredit(true)}>
-                <span className="text-base">💰</span> Credit Wallet
+              <button className="av-btn av-btn-primary w-full justify-start py-2.5 shine" onClick={() => setShowCredit(true)}>
+                Credit Wallet
               </button>
-              <button className="av-btn av-btn-ghost w-full justify-start py-2.5 cursor-pointer" onClick={() => onNavigate('suppliers')}>
-                <span className="text-base">➕</span> Add New Supplier
+              <button className="av-btn av-btn-ghost w-full justify-start py-2.5" onClick={() => onNavigate('suppliers')}>
+                + Add New Supplier
               </button>
-              <button className="av-btn av-btn-ghost w-full justify-start py-2.5 cursor-pointer" onClick={() => onNavigate('pay')}>
-                <span className="text-base">💸</span> Run Batch Payout
+              <button className="av-btn av-btn-ghost w-full justify-start py-2.5" onClick={() => onNavigate('pay')}>
+                Run Batch Payout
               </button>
-              <button className="av-btn av-btn-ghost w-full justify-start py-2.5 cursor-pointer" onClick={() => onNavigate('settings')}>
-                <span className="text-base">🔒</span> Update Security PIN
+              <button className="av-btn av-btn-ghost w-full justify-start py-2.5" onClick={() => onNavigate('settings')}>
+                Update Security PIN
               </button>
-              <button className="av-btn av-btn-ghost w-full justify-start py-2.5 cursor-pointer" style={{ color: 'var(--color-av-blue-light)', border: '1px solid rgba(56, 189, 248, 0.3)' }} onClick={handleSeed} disabled={seeding}>
-                <span className="text-base">🚀</span> {seeding ? 'Seeding...' : 'Load Demo Data'}
+              <button className="av-btn av-btn-ghost w-full justify-start py-2.5" style={{ color: 'var(--color-av-accent)', border: '1px solid var(--color-av-accent-border)' }} onClick={handleSeed} disabled={seeding}>
+                {seeding ? 'Seeding...' : 'Load Demo Data'}
               </button>
             </div>
           </div>
 
-          {/* Real-time System Activity Log */}
           <div className="glass-card p-5 float-in fd-4">
             <div className="flex items-center justify-between mb-3.5">
               <h3 className="heading text-sm">Security Auditing</h3>
-              <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-av-accent)' }} />
             </div>
-            <div className="space-y-2 font-mono text-[9px] tracking-wide" style={{ color: 'var(--color-av-gray-dim)' }}>
-              <div className="p-2 rounded bg-black/20 border border-white/5 flex items-center justify-between">
+            <div className="space-y-2 text-[9px] tracking-wide" style={{ color: 'var(--color-av-text-muted)' }}>
+              <div className="p-2 rounded flex items-center justify-between" style={{ background: 'var(--color-av-bg)', border: '1px solid var(--color-av-glass-border)' }}>
                 <span>API Gateway Handshake</span>
-                <span className="text-sky-400 font-bold">VERIFIED</span>
+                <span className="font-bold" style={{ color: 'var(--color-av-accent)' }}>VERIFIED</span>
               </div>
-              <div className="p-2 rounded bg-black/20 border border-white/5 flex items-center justify-between">
+              <div className="p-2 rounded flex items-center justify-between" style={{ background: 'var(--color-av-bg)', border: '1px solid var(--color-av-glass-border)' }}>
                 <span>Auto-Match Engine</span>
-                <span className="text-sky-400 font-bold">STANDBY</span>
+                <span className="font-bold" style={{ color: 'var(--color-av-accent)' }}>STANDBY</span>
               </div>
-              <div className="p-2 rounded bg-black/20 border border-white/5 flex items-center justify-between">
+              <div className="p-2 rounded flex items-center justify-between" style={{ background: 'var(--color-av-bg)', border: '1px solid var(--color-av-glass-border)' }}>
                 <span>Database Sync</span>
-                <span className="text-sky-400 font-bold">ONLINE</span>
+                <span className="font-bold" style={{ color: 'var(--color-av-accent)' }}>ONLINE</span>
               </div>
-              <div className="p-2 rounded bg-black/20 border border-white/5 flex items-center justify-between">
+              <div className="p-2 rounded flex items-center justify-between" style={{ background: 'var(--color-av-bg)', border: '1px solid var(--color-av-glass-border)' }}>
                 <span>JWT Encryption Key</span>
-                <span className="text-sky-400 font-bold">SECURED</span>
+                <span className="font-bold" style={{ color: 'var(--color-av-accent)' }}>SECURED</span>
               </div>
             </div>
           </div>
 
-          {/* Recent Credits Events */}
           {creditEvents.length > 0 && (
             <div className="glass-card p-5 float-in fd-5">
               <h3 className="heading text-sm mb-3.5">Recent Credits</h3>
               <div className="space-y-2">
                 {creditEvents.map(ev => (
-                  <div key={ev._id} className="flex items-center justify-between py-2.5 px-3.5 rounded-xl shine" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                  <div key={ev._id} className="flex items-center justify-between py-2.5 px-3.5 rounded-xl" style={{ background: 'var(--color-av-bg)' }}>
                     <div>
-                      <p className="text-xs font-semibold text-white/80">{ev.source}</p>
-                      <p className="text-[9px]" style={{ color: 'var(--color-av-gray-dim)' }}>{new Date(ev.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
+                      <p className="text-xs font-semibold" style={{ color: 'var(--color-av-text-secondary)' }}>{ev.source}</p>
+                      <p className="text-[9px]" style={{ color: 'var(--color-av-text-muted)' }}>{new Date(ev.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
-                    <span className="text-xs font-bold" style={{ color: 'var(--color-av-blue-light)', fontFamily: 'var(--font-display)' }}>+{fmtCur(ev.amount)}</span>
+                    <span className="text-xs font-bold" style={{ color: 'var(--color-av-accent)', fontFamily: 'var(--font-display)' }}>+{fmtCur(ev.amount)}</span>
                   </div>
                 ))}
               </div>
@@ -336,34 +299,32 @@ export function DashboardView({ onNavigate }: { onNavigate: (v: string) => void 
 
       </div>
 
-      {/* Credit Modal */}
       {showCredit && (
         <div className="modal-overlay" onClick={() => setShowCredit(false)}>
           <div className="modal-content" style={{ padding: '20px', maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="heading text-lg">💰 Credit Account</h3>
-              <button onClick={() => setShowCredit(false)} style={{ color: 'var(--color-av-gray-dim)' }}>✕</button>
+              <h3 className="heading text-lg">Credit Account</h3>
+              <button onClick={() => setShowCredit(false)} style={{ color: 'var(--color-av-text-muted)' }}>✕</button>
             </div>
             <p className="body-text text-xs mb-4">Simulate a bank credit to trigger the auto-match engine.</p>
             <div className="flex flex-wrap gap-1.5 mb-4">
               {quickAmounts.map(a => (
                 <button key={a} onClick={() => setCreditAmount(a.toString())}
-                  className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all"
                   style={{
-                    background: creditAmount === a.toString() ? 'linear-gradient(135deg, var(--color-av-blue), var(--color-av-blue-deep))' : 'rgba(255,255,255,0.04)',
-                    color: creditAmount === a.toString() ? '#fff' : 'var(--color-av-gray)',
-                    border: `1px solid ${creditAmount === a.toString() ? 'rgba(35,77,194,0.3)' : 'rgba(255,255,255,0.06)'}`,
-                    boxShadow: creditAmount === a.toString() ? '0 4px 16px rgba(35,77,194,0.25)' : 'none',
+                    background: creditAmount === a.toString() ? 'linear-gradient(135deg, var(--color-av-accent), #4338ca)' : 'var(--color-av-bg)',
+                    color: creditAmount === a.toString() ? '#fff' : 'var(--color-av-text-secondary)',
+                    border: `1px solid ${creditAmount === a.toString() ? 'var(--color-av-accent-border)' : 'var(--color-av-glass-border)'}`,
                   }}>{fmtCur(a)}</button>
               ))}
             </div>
             <input className="av-input mb-4" type="number" placeholder="Enter amount" value={creditAmount} onChange={e => setCreditAmount(e.target.value)} />
-            <div className="flex justify-between items-center p-3 rounded-xl mb-4" style={{ background: 'rgba(56, 189, 248, 0.04)', border: '1px solid rgba(56, 189, 248, 0.1)' }}>
+            <div className="flex justify-between items-center p-3 rounded-xl mb-4" style={{ background: 'var(--color-av-accent-bg)', border: '1px solid var(--color-av-accent-border)' }}>
               <span className="label">New Balance</span>
-              <span className="text-xs font-bold text-white/90" style={{ color: 'var(--color-av-blue-light)', fontFamily: 'var(--font-display)' }}>{fmtCur((account?.balance ?? 0) + (parseInt(creditAmount) || 0))}</span>
+              <span className="text-xs font-bold" style={{ color: 'var(--color-av-accent)', fontFamily: 'var(--font-display)' }}>{fmtCur((account?.balance ?? 0) + (parseInt(creditAmount) || 0))}</span>
             </div>
-            <button className="av-btn av-btn-primary w-full py-2.5 cursor-pointer" onClick={handleCredit} disabled={crediting || !creditAmount}>
-              {crediting ? <><div className="spinner"></div> Processing...</> : `Credit ${creditAmount ? fmtCur(parseInt(creditAmount)) : '₹0'}`}
+            <button className="av-btn av-btn-primary w-full py-2.5" onClick={handleCredit} disabled={crediting || !creditAmount}>
+              {crediting ? <><div className="spinner"></div> Processing...</> : `Credit ${creditAmount ? fmtCur(parseInt(creditAmount)) : '\u20B90'}`}
             </button>
           </div>
         </div>
