@@ -5,7 +5,7 @@ import { useAuth } from '../providers'
 
 interface Supplier { _id: string; name: string; phone: string; category: string; priority: string; totalDue: number; totalPaid: number; lastPaidAt?: string; bankDetails?: { accountNumber?: string; ifscCode?: string; bankName?: string; holderName?: string }; upiId?: string }
 
-const CAT_ICONS: Record<string, string> = { dairy: '🥛', grain: '🌾', spices: '🌶', vegetables: '🥬', fruits: '🍊', meat: '🥩', packaging: '📦', logistics: '🚛', equipment: '⚙️', other: '📋' }
+const CAT_ICONS: Record<string, string> = { dairy: '\uD83E\uDD5B', grain: '\uD83C\uDF3E', spices: '\uD83C\uDF36', vegetables: '\uD83E\uDD6C', fruits: '\uD83C\uDF4A', meat: '\uD83E\uDD69', packaging: '\uD83D\uDCE6', logistics: '\uD83D\uDE9B', equipment: '\u2699\uFE0F', other: '\uD83D\uDCCB' }
 
 export function SuppliersView() {
   const { authFetch } = useAuth()
@@ -76,21 +76,20 @@ export function SuppliersView() {
 
   const handleDelete = async (id: string) => { if (!confirm('Delete this supplier?')) return; await authFetch(`/api/suppliers/${id}`, { method: 'DELETE' }); load() }
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
-  const fmtCur = (n: number) => `₹${(n || 0).toLocaleString('en-IN')}`
+  const fmtCur = (n: number) => `\u20B9${(n || 0).toLocaleString('en-IN')}`
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6 float-in">
         <div>
           <h2 className="heading text-2xl">Supplier Ledger</h2>
-          <p className="mt-1" style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', color: 'var(--color-av-gray)', fontSize: '0.85rem' }}>
+          <p className="mt-1" style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', color: 'var(--color-av-text-secondary)', fontSize: '0.85rem' }}>
             {suppliers.length} suppliers · Outstanding: <span style={{ color: 'var(--color-av-danger)' }}>{fmtCur(totalDue)}</span>
           </p>
         </div>
         <button className="av-btn av-btn-primary shine" onClick={openAdd}>+ Add Supplier</button>
       </div>
 
-      {/* Filters */}
       <div className="glass-card p-5 mb-7 float-in fd-1">
         <div className="flex flex-col md:flex-row gap-3">
           <input className="av-input flex-1" placeholder="Search suppliers..." value={search} onChange={e => setSearch(e.target.value)} />
@@ -103,27 +102,25 @@ export function SuppliersView() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="glass p-1 overflow-x-auto float-in fd-2">
         <table className="av-table">
           <thead><tr><th>Supplier</th><th>Category</th><th>Priority</th><th>Due</th><th>Paid</th><th>Last Paid</th><th>Actions</th></tr></thead>
           <tbody>
             {suppliers.length === 0 ? (
               <tr><td colSpan={7} className="text-center py-14">
-                <p className="text-4xl mb-3 opacity-30">◎</p>
                 <p className="body-text text-sm">No suppliers found</p>
               </td></tr>
             ) : suppliers.map(s => (
               <tr key={s._id}>
                 <td>
-                  <p className="font-bold text-sm" style={{ color: 'var(--color-av-white-80)' }}>{s.name}</p>
-                  <p className="text-xs" style={{ color: 'var(--color-av-gray-dim)' }}>{s.phone}</p>
+                  <p className="font-bold text-sm" style={{ color: 'var(--color-av-text)' }}>{s.name}</p>
+                  <p className="text-xs" style={{ color: 'var(--color-av-text-muted)' }}>{s.phone}</p>
                 </td>
-                <td><span className="text-sm">{CAT_ICONS[s.category] || '📋'} {s.category}</span></td>
+                <td><span className="text-sm">{CAT_ICONS[s.category] || '\uD83D\uDCCB'} {s.category}</span></td>
                 <td><span className={`badge badge-${s.priority}`}>{s.priority}</span></td>
                 <td><span className="font-bold text-sm" style={{ color: s.totalDue > 0 ? 'var(--color-av-danger)' : 'var(--color-av-success)', fontFamily: 'var(--font-display)' }}>{fmtCur(s.totalDue)}</span></td>
                 <td><span className="text-sm" style={{ color: 'var(--color-av-success)' }}>{fmtCur(s.totalPaid)}</span></td>
-                <td><span className="text-xs" style={{ color: 'var(--color-av-gray-dim)' }}>{s.lastPaidAt ? new Date(s.lastPaidAt).toLocaleDateString('en-IN') : '—'}</span></td>
+                <td><span className="text-xs" style={{ color: 'var(--color-av-text-muted)' }}>{s.lastPaidAt ? new Date(s.lastPaidAt).toLocaleDateString('en-IN') : '—'}</span></td>
                 <td className="flex gap-2">
                   <button className="av-btn av-btn-ghost text-xs py-1 px-3" onClick={() => openEdit(s)}>Edit</button>
                   <button onClick={() => handleDelete(s._id)} className="px-2 py-1 rounded-lg" style={{ color: 'var(--color-av-danger)', opacity: 0.5 }}
@@ -139,8 +136,8 @@ export function SuppliersView() {
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content" style={{ maxWidth: '560px' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-7">
-              <h3 className="heading text-xl">{editId ? '✏️ Edit Supplier' : '➕ New Supplier'}</h3>
-              <button onClick={() => setShowModal(false)} style={{ color: 'var(--color-av-gray-dim)' }}>✕</button>
+              <h3 className="heading text-xl">{editId ? 'Edit Supplier' : 'New Supplier'}</h3>
+              <button onClick={() => setShowModal(false)} style={{ color: 'var(--color-av-text-muted)' }}>✕</button>
             </div>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-3">
