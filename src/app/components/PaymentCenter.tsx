@@ -3,8 +3,16 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../providers'
 
-interface Suggestion { _id: string; name: string; priority: string; totalDue: number; suggestedAmount: number; bankDetails: { bankName: string }; upiId?: string; phone: string }
-interface PayResult { supplier: string; supplierId: string; amount: number; status: string; method: string; referenceId?: string; utr?: string; error?: string }
+interface Suggestion {
+  _id: string; name: string; priority: string; totalDue: number; suggestedAmount: number
+  bankDetails: { bankName: string }; upiId?: string; phone: string
+  isPartial?: boolean; percentagePaid?: number; tdsRate?: number; gstin?: string
+}
+
+interface PayResult {
+  supplier: string; amount: number; netAmount: number; tdsAmount: number
+  status: string; method: string; referenceId?: string; utr?: string; error?: string
+}
 
 export function PaymentView() {
   const { account, authFetch, refreshAccount } = useAuth()
@@ -43,184 +51,173 @@ export function PaymentView() {
     })
   }
 
-  const totalSelected = Object.values(selected).reduce((a, b) => a + b.amount, 0)
+  const grossTotal = Object.entries(selected).reduce((sum, [, item]) => sum + item.amount, 0)
   const selectedCount = Object.keys(selected).length
-  const afterPayment = (account?.balance ?? 0) - totalSelected
+  const totalNet = Math.round(grossTotal * 0.98)
+  const totalTds = grossTotal - totalNet
   const fmtCur = (n: number) => `\u20B9${(n || 0).toLocaleString('en-IN')}`
 
   const executePay = async () => {
     setPaying(true); setError('')
     const payments = Object.entries(selected).map(([supplierId, { amount, method }]) => ({ supplierId, amount, method }))
     try {
-      const res = await authFetch('/api/payments/execute', { method: 'POST', body: JSON.stringify({ payments, pin }) })
+      const res = await authFetch('/api/payments/execute', {
+        method: 'POST', body: JSON.stringify({ payments, pin }),
+      })
       const data = await res.json()
       if (data.results) { setResults(data.results); setShowPin(false); setPin(''); await refreshAccount() }
-      else setError(data.error || 'Payment failed')
-    } catch (e) { setError('Network error'); console.error(e) }
+      else { setError(data.error || 'Payment failed') }
+    } catch (e) { setError('Network error') }
     setPaying(false)
   }
 
-  const methods = ['UPI', 'NEFT', 'RTGS', 'IMPS']
-
   if (results) {
     const success = results.filter(r => r.status === 'completed').length
-    const total = results.reduce((a, r) => a + (r.status === 'completed' ? r.amount : 0), 0)
     return (
-      <div className="float-in">
-        <h2 className="heading text-2xl mb-6">Payment Results</h2>
-        <div className="glass p-5 mb-5">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{
-                background: success === results.length ? 'var(--color-av-success-bg)' : 'var(--color-av-bg)',
-                border: `1px solid ${success === results.length ? 'rgba(5, 150, 105, 0.2)' : 'var(--color-av-glass-border)'}`,
-              }}>
-              <span className="text-xl">{success === results.length ? '✓' : '⚠'}</span>
-            </div>
-            <div>
-              <p className="heading text-base">{success} of {results.length} payments successful</p>
-              <p className="body-text text-xs mt-0.5">Total paid: {fmtCur(total)}</p>
-            </div>
+      <div className="page-wrap">
+        <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 20 }}>Payment Results</div>
+        <div className="card" style={{ padding: '20px 24px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: success === results.length ? 'var(--color-av-success-bg)' : 'var(--color-av-accent-bg)' }}>
+            <span style={{ fontSize: 16 }}>{success === results.length ? '✓' : '⚠'}</span>
+          </div>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 600 }}>{success} of {results.length} successful</div>
+            <div className="subtitle" style={{ marginTop: 1 }}>Batch completed</div>
           </div>
         </div>
-        <div className="space-y-2.5">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {results.map((r, i) => (
-            <div key={i} className={`glass-card p-4 flex items-center justify-between float-in fd-${Math.min(i + 1, 4)}`}>
-              <div className="flex items-center gap-3">
-                <span className="text-base">{r.status === 'completed' ? '✅' : '❌'}</span>
+            <div key={i} className="card" style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontSize: 14 }}>{r.status === 'completed' ? '✅' : '❌'}</span>
                 <div>
-                  <p className="text-xs font-bold" style={{ color: 'var(--color-av-text)' }}>{r.supplier}</p>
-                  <p className="body-text text-[11px] mt-0.5">
-                    {r.method} · Ref: {r.referenceId || '—'} · UTR: {r.utr || '—'}
-                  </p>
+                  <div style={{ fontSize: 12, fontWeight: 600 }}>{r.supplier}</div>
+                  <div className="subtitle" style={{ fontSize: 10 }}>{r.method} · Ref: {r.referenceId || '—'}</div>
                 </div>
               </div>
-              <span className="text-xs font-bold" style={{ color: 'var(--color-av-text)' }}>
-                {fmtCur(r.amount)}
-              </span>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 12, fontWeight: 700 }}>{fmtCur(r.netAmount || r.amount)}</div>
+                <div className="subtitle" style={{ fontSize: 9, textTransform: 'uppercase', fontWeight: 700 }}>Net</div>
+              </div>
             </div>
           ))}
         </div>
-        <button className="av-btn av-btn-primary mt-5 shine" onClick={() => { setResults(null); load() }}>
-          ← Back to Payment Center
-        </button>
+        <button className="av-btn av-btn-primary" style={{ marginTop: 20 }} onClick={() => { setResults(null); load() }}>← Back</button>
       </div>
     )
   }
 
   return (
-    <div>
-      <div className="float-in">
-        <h2 className="heading text-2xl">Payment Center</h2>
-        <p className="body-text text-xs mt-0.5">Select suppliers and payment methods to initiate batch payouts</p>
+    <div className="page-wrap">
+      <div className="float-in" style={{ marginBottom: 24 }}>
+        <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em' }}>Pay Now</div>
+        <div className="subtitle" style={{ marginTop: 2 }}>Select suppliers and execute batch payout</div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-5">
-        <div className="glass-card p-3.5 float-in fd-1">
-          <p className="label mb-1">Available</p>
-          <p className="stat-num text-lg mt-0.5" style={{ color: 'var(--color-av-text)' }}>{fmtCur(account?.balance ?? 0)}</p>
+      {/* metrics */}
+      <div className="float-in d1" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+        <div className="card" style={{ padding: '16px 18px' }}>
+          <div className="stat-lbl">Balance</div>
+          <div className="stat-num" style={{ fontSize: '1.1rem' }}>{fmtCur(account?.balance ?? 0)}</div>
         </div>
-        <div className="glass-card p-3.5 float-in fd-2">
-          <p className="label mb-1">Selected</p>
-          <p className="stat-num text-lg mt-0.5" style={{ color: 'var(--color-av-accent)' }}>{selectedCount} · {fmtCur(totalSelected)}</p>
+        <div className="card" style={{ padding: '16px 18px' }}>
+          <div className="stat-lbl">Selected</div>
+          <div className="stat-num" style={{ fontSize: '1.1rem' }}>{selectedCount}</div>
         </div>
-        <div className="glass-card p-3.5 float-in fd-3">
-          <p className="label mb-1">After Payment</p>
-          <p className="stat-num text-lg mt-0.5" style={{ color: afterPayment >= 0 ? 'var(--color-av-text)' : 'var(--color-av-text-muted)' }}>{fmtCur(afterPayment)}</p>
+        <div className="card" style={{ padding: '16px 18px' }}>
+          <div className="stat-lbl">Gross</div>
+          <div className="stat-num" style={{ fontSize: '1.1rem' }}>{fmtCur(grossTotal)}</div>
+        </div>
+        <div className="card" style={{ padding: '16px 18px' }}>
+          <div className="stat-lbl">Net Payout</div>
+          <div className="stat-num" style={{ fontSize: '1.1rem', color: (account?.balance ?? 0) >= totalNet ? 'var(--color-av-accent)' : 'var(--color-av-danger)' }}>{fmtCur(totalNet)}</div>
         </div>
       </div>
 
       {loading ? (
-        <div className="text-center py-16"><div className="spinner mx-auto mb-3"></div><p className="body-text text-xs">Loading suggestions...</p></div>
+        <div className="card" style={{ padding: '48px 0', textAlign: 'center' }}>
+          <div className="spinner" style={{ margin: '0 auto 12px' }}></div>
+          <div className="subtitle">Loading suggestions...</div>
+        </div>
       ) : suggestions.length === 0 ? (
-        <div className="glass p-8 text-center float-in fd-1">
-          <p className="body-text text-xs font-semibold">No suppliers with dues or insufficient balance</p>
+        <div className="card" style={{ padding: '40px 0', textAlign: 'center' }}>
+          <div className="subtitle">No suppliers with dues or insufficient balance</div>
         </div>
       ) : (
-        <>
-          <div className="space-y-2.5">
-            {suggestions.map((s, i) => {
-              const isSelected = !!selected[s._id]
-              return (
-                <div key={s._id} className={`glass-card p-4 transition-all float-in fd-${Math.min(i + 1, 4)}`}
-                  style={{
-                    borderColor: isSelected ? 'var(--color-av-accent-border)' : undefined,
-                    boxShadow: isSelected ? '0 0 20px rgba(79, 70, 229, 0.06)' : undefined,
-                  }}>
-                  <div className="flex items-start gap-3">
-                    <button onClick={() => toggleSelect(s._id, s)}
-                      className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 transition-all"
-                      style={{
-                        background: isSelected ? 'linear-gradient(135deg, var(--color-av-accent), #4338ca)' : 'var(--color-av-bg)',
-                        border: `1px solid ${isSelected ? 'var(--color-av-accent-border)' : 'var(--color-av-glass-border)'}`,
-                        color: '#fff',
-                        fontSize: '11px',
-                      }}>
-                      {isSelected ? '✓' : ''}
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-xs font-bold truncate" style={{ color: 'var(--color-av-text)' }}>{s.name}</span>
-                        <span className={`badge badge-${s.priority}`}>{s.priority}</span>
-                      </div>
-                      <p className="body-text text-[11px] truncate">
-                        {s.phone} · Due: {fmtCur(s.totalDue)} · {s.bankDetails.bankName} · {s.upiId || 'No UPI'}
-                      </p>
-                      {isSelected && (
-                        <div className="flex items-center gap-1.5 mt-2.5">
-                          {methods.map(m => (
-                            <button key={m} onClick={() => setSelected(p => ({ ...p, [s._id]: { ...p[s._id], method: m } }))}
-                              className={`method-pill method-${m.toLowerCase()} transition-all`}
-                              style={{
-                                opacity: selected[s._id]?.method === m ? 1 : 0.4,
-                                border: selected[s._id]?.method === m ? '1px solid var(--color-av-accent-border)' : '1px solid transparent',
-                              }}>
-                              {m}
-                            </button>
-                          ))}
-                        </div>
-                      )}
+        <div className="float-in d2" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {suggestions.map(s => {
+            const isSelected = !!selected[s._id]
+            return (
+              <div key={s._id} className="card" style={{
+                padding: '14px 18px',
+                borderColor: isSelected ? 'var(--color-av-accent-border)' : undefined,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <button onClick={() => toggleSelect(s._id, s)}
+                    style={{
+                      width: 20, height: 20, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer', border: 'none', fontFamily: 'inherit',
+                      background: isSelected ? 'var(--color-av-accent)' : 'var(--color-av-gray-100)',
+                      color: '#fff', fontSize: 10, transition: 'all 0.1s',
+                    }}>
+                    {isSelected ? '✓' : ''}
+                  </button>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 12, fontWeight: 600 }}>{s.name}</span>
+                      <span className={`badge badge-${s.priority}`}>{s.priority}</span>
                     </div>
-                    {isSelected && (
-                      <input type="number" className="av-input w-24 text-right py-1 px-2 text-xs" value={selected[s._id]?.amount ?? 0}
-                        onChange={e => setSelected(p => ({ ...p, [s._id]: { ...p[s._id], amount: parseInt(e.target.value) || 0 } }))} />
-                    )}
+                    <div className="subtitle" style={{ fontSize: 10 }}>{s.bankDetails.bankName} · {s.upiId || 'No UPI'}</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700 }}>{fmtCur(s.suggestedAmount)}</div>
+                    <div className="subtitle" style={{ fontSize: 9 }}>Suggested</div>
                   </div>
                 </div>
-              )
-            })}
-          </div>
+                {isSelected && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--color-av-gray-100)' }}>
+                    {['UPI', 'NEFT', 'RTGS', 'IMPS'].map(m => (
+                      <button key={m} onClick={() => setSelected(p => ({ ...p, [s._id]: { ...p[s._id], method: m } }))}
+                        className={`m-pill m-${m.toLowerCase()}`}
+                        style={{ opacity: selected[s._id]?.method === m ? 1 : 0.35, cursor: 'pointer', border: 'none', fontFamily: 'inherit' }}>
+                        {m}
+                      </button>
+                    ))}
+                    <input type="number" className="av-input" style={{ width: 80, marginLeft: 'auto', padding: '4px 8px', fontSize: 11, textAlign: 'right' }}
+                      value={selected[s._id]?.amount ?? 0}
+                      onChange={e => setSelected(p => ({ ...p, [s._id]: { ...p[s._id], amount: parseInt(e.target.value) || 0 } }))} />
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
 
-          {selectedCount > 0 && (
-            <button className="av-btn av-btn-primary w-full py-3 mt-5 text-sm shine"
-              onClick={() => setShowPin(true)} disabled={totalSelected <= 0 || totalSelected > (account?.balance ?? 0)}>
-              Pay {selectedCount} Supplier(s) — {fmtCur(totalSelected)}
-            </button>
-          )}
-        </>
+      {selectedCount > 0 && (
+        <div className="float-in d3" style={{ marginTop: 20 }}>
+          <button className="av-btn av-btn-primary" style={{ width: '100%', padding: '12px 0', fontSize: 13 }}
+            onClick={() => setShowPin(true)}
+            disabled={totalNet <= 0 || totalNet > (account?.balance ?? 0)}>
+            Pay {selectedCount} Supplier(s) — {fmtCur(totalNet)} net
+          </button>
+        </div>
       )}
 
       {showPin && (
-        <div className="modal-overlay" onClick={() => { setShowPin(false); setPin('') }}>
-          <div className="modal-content" style={{ padding: '20px', maxWidth: '380px' }} onClick={e => e.stopPropagation()}>
-            <div className="text-center mb-5">
-              <div className="w-12 h-12 mx-auto mb-3.5 rounded-2xl flex items-center justify-center"
-                style={{
-                  background: 'var(--color-av-accent-bg)',
-                  border: '1px solid var(--color-av-accent-border)',
-                }}>
-                <span className="text-xl">🔐</span>
+        <div className="modal-wrap" onClick={() => { setShowPin(false); setPin('') }}>
+          <div className="modal-box" style={{ maxWidth: '340px' }} onClick={e => e.stopPropagation()}>
+            <div style={{ textAlign: 'center', marginBottom: 16 }}>
+              <div style={{ width: 40, height: 40, margin: '0 auto 12px', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-av-accent-bg)' }}>
+                <span style={{ fontSize: 16 }}>🔐</span>
               </div>
-              <h3 className="heading text-base">Authorize Payment</h3>
-              <p className="body-text text-xs mt-1.5">
-                Confirm {fmtCur(totalSelected)} to {selectedCount} supplier(s)
-              </p>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>Authorize Payout</div>
+              <div className="subtitle" style={{ marginTop: 4 }}>Net: {fmtCur(totalNet)}</div>
             </div>
-            {error && <div className="p-2.5 rounded-xl text-xs mb-3 font-semibold" style={{ background: 'var(--color-av-danger-bg)', color: 'var(--color-av-danger)', border: '1px solid rgba(220, 38, 38, 0.15)' }}>{error}</div>}
-            <input className="av-input text-center text-xl tracking-[0.5em] mb-4 py-2" type="password" maxLength={4} placeholder="• • • •"
+            {error && <div style={{ padding: '8px 12px', borderRadius: 8, fontSize: 12, marginBottom: 12, background: 'var(--color-av-danger-bg)', color: 'var(--color-av-danger)' }}>{error}</div>}
+            <input className="av-input" style={{ textAlign: 'center', fontSize: 16, letterSpacing: '0.5em', marginBottom: 16, padding: '10px 0' }} type="password" maxLength={4} placeholder="• • • •"
               value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, ''))} autoFocus />
-            <button className="av-btn av-btn-primary w-full py-2.5" onClick={executePay} disabled={pin.length !== 4 || paying}>
-              {paying ? <><div className="spinner"></div> Processing...</> : 'Confirm & Pay'}
+            <button className="av-btn av-btn-primary" style={{ width: '100%', padding: '11px 0' }} onClick={executePay} disabled={pin.length !== 4 || paying}>
+              {paying ? <><div className="spinner"></div> Processing...</> : 'Confirm'}
             </button>
           </div>
         </div>
