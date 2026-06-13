@@ -9,8 +9,8 @@ import PFCreditEvent from '@/lib/models/PFCreditEvent'
 import { hashPassword, hashPin, signToken } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
-  await dbConnect()
   try {
+    await dbConnect()
     const demoEmail = 'rajesh@agrifresh.in'
     
     // Find or create Rajesh demo account
