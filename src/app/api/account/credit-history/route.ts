@@ -4,8 +4,9 @@ import PFCreditEvent from '@/lib/models/PFCreditEvent'
 import { getBusinessIdFromRequest } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
-  await dbConnect()
   try {
+
+    await dbConnect()
     const businessId = getBusinessIdFromRequest(request)
     if (!businessId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
