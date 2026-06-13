@@ -5,7 +5,7 @@ import { useAuth } from '../providers'
 
 interface Stats { totalDue: number; supplierCount: number; suppliersWithDue: number }
 interface AutoMatch { balance: number; suggestedSuppliers: { _id: string; name: string; priority: string; totalDue: number; suggestedAmount: number }[]; totalPayout: number; remainingBalance: number }
-interface CreditEvent { _id: string; amount: number; source: string; balanceAfter: number; createdAt: string }
+interface CreditEvent { _id: string; amount: number; source: string; createdAt: string }
 
 export function DashboardView({ onNavigate }: { onNavigate: (v: string) => void }) {
   const { account, business, authFetch, refreshAccount } = useAuth()
@@ -19,7 +19,9 @@ export function DashboardView({ onNavigate }: { onNavigate: (v: string) => void 
 
   const loadData = useCallback(async () => {
     try {
-      const [a, s, c] = await Promise.all([authFetch('/api/account'), authFetch('/api/payments/suggest'), authFetch('/api/account/credit-history?limit=5')])
+      const [a, s, c] = await Promise.all([
+        authFetch('/api/account'), authFetch('/api/payments/suggest'), authFetch('/api/account/credit-history?limit=5')
+      ])
       if (a.ok) { const d = await a.json(); setStats(d.stats) }
       if (s.ok) { const d = await s.json(); setSuggestions(d) }
       if (c.ok) { const d = await c.json(); setCreditEvents(d.events) }
@@ -35,7 +37,7 @@ export function DashboardView({ onNavigate }: { onNavigate: (v: string) => void 
     try {
       const res = await authFetch('/api/account', { method: 'POST', body: JSON.stringify({ amount: amt, source: 'Bank Transfer' }) })
       const data = await res.json()
-      if (data.success) { setToast(data.notification); setCreditAmount(''); setShowCredit(false); await refreshAccount(); await loadData(); setTimeout(() => setToast(''), 5000) }
+      if (data.success) { setToast(data.notification); setCreditAmount(''); setShowCredit(false); await refreshAccount(); await loadData(); setTimeout(() => setToast(''), 4000) }
     } catch (e) { console.error(e) }
     setCrediting(false)
   }
@@ -46,285 +48,206 @@ export function DashboardView({ onNavigate }: { onNavigate: (v: string) => void 
     try {
       const res = await authFetch('/api/demo/seed', { method: 'POST' })
       const data = await res.json()
-      if (data.success) {
-        setToast('Demo workspace populated successfully!')
-        await refreshAccount()
-        await loadData()
-        setTimeout(() => setToast(''), 5000)
-      }
+      if (data.success) { setToast('Demo data populated!'); await refreshAccount(); await loadData(); setTimeout(() => setToast(''), 4000) }
     } catch (e) { console.error(e) }
     setSeeding(false)
   }
 
-  const quickAmounts = [100000, 250000, 500000, 750000, 1000000, 1500000]
+  const quickAmounts = [100000, 250000, 500000, 1000000]
   const fmtCur = (n: number) => `\u20B9${(n || 0).toLocaleString('en-IN')}`
 
   return (
-    <div>
+    <div className="page-wrap">
       {toast && (
-        <div className="fixed top-5 right-5 z-50 max-w-sm p-4 rounded-2xl toast-in"
-          style={{ background: 'var(--color-av-glass-strong)', backdropFilter: 'blur(8px)', border: '1px solid var(--color-av-glass-border)', color: 'var(--color-av-text)' }}>
-          <p className="text-sm font-bold" style={{ fontFamily: 'var(--font-body)' }}>{toast}</p>
-          <button onClick={() => setToast('')} className="absolute top-2 right-3 opacity-50 hover:opacity-100">✕</button>
+        <div className="float-in" style={{ position: 'fixed', top: 20, right: 20, zIndex: 100, padding: '12px 20px', background: '#fff', borderRadius: 12, boxShadow: '0 4px 20px rgba(0,0,0,0.08)', border: '1px solid rgba(0,0,0,0.04)' }}>
+          <div style={{ fontSize: 13, fontWeight: 600 }}>{toast}</div>
+          <button onClick={() => setToast('')} style={{ position: 'absolute', top: 8, right: 10, border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-av-text-muted)', fontSize: 12 }}>✕</button>
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-6 float-in">
+      {/* header */}
+      <div className="float-in" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>
-          <h2 className="heading text-2xl">Dashboard</h2>
-          <p className="body-text text-xs mt-0.5">Overview of your payment operations</p>
+          <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em' }}>Dashboard</div>
+          <div className="subtitle" style={{ marginTop: 2 }}>{business?.name}</div>
         </div>
-        <button className="av-btn av-btn-primary shine" onClick={() => setShowCredit(true)}>+ Credit Account</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="av-btn av-btn-ghost" onClick={handleSeed} disabled={seeding} style={{ fontSize: 12 }}>{seeding ? 'Seeding...' : 'Seed Data'}</button>
+          <button className="av-btn av-btn-primary" onClick={() => setShowCredit(true)}>+ Credit</button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-        <div className="lg:col-span-2 space-y-6">
-
-          <div className="glass-crystal p-6 relative overflow-hidden float-in fd-1"
-               style={{
-                 background: 'linear-gradient(135deg, #f8f9fb 0%, #f1f2f6 100%)',
-                 border: '1px solid rgba(0,0,0,0.04)',
-               }}>
-            <div className="absolute inset-0" style={{
-              backgroundImage: 'radial-gradient(rgba(79, 70, 229, 0.03) 1px, transparent 1px)',
-              backgroundSize: '16px 16px',
-            }} />
-
-            <div className="absolute top-0 right-0 w-80 h-80 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(79, 70, 229, 0.04) 0%, transparent 70%)', transform: 'translate(25%,-35%)' }} />
-            <div className="absolute bottom-0 left-0 w-60 h-60 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(79, 70, 229, 0.03) 0%, transparent 70%)', transform: 'translate(-25%,35%)' }} />
-
-            <div className="flex justify-between items-start mb-8 relative z-10">
-              <div>
-                <p className="label mb-1" style={{ letterSpacing: '0.2em', color: 'var(--color-av-accent)' }}>Corporate Debit Wallet</p>
-                <p className="heading text-xs" style={{ color: 'var(--color-av-text-muted)' }}>Arvitta Financial Systems</p>
-              </div>
-            </div>
-
-            <div className="relative z-10 mb-6">
-              <p className="label mb-1" style={{ color: 'var(--color-av-text-muted)' }}>Available Balance</p>
-              <p className="stat-num text-3xl" style={{ color: 'var(--color-av-text)' }}>
-                {fmtCur(account?.balance ?? 0)}
-              </p>
-            </div>
-
-            <div className="flex justify-between items-end relative z-10">
-              <div className="flex gap-8">
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-av-text-muted)' }}>Business Name</p>
-                  <p className="text-xs font-bold mt-1" style={{ color: 'var(--color-av-text-secondary)' }}>{business?.name || 'Agri Fresh Foods'}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-av-text-muted)' }}>Status</p>
-                  <p className="text-xs font-bold mt-1" style={{ color: 'var(--color-av-accent)' }}>ACTIVE</p>
-                </div>
-              </div>
-            </div>
+      {/* balance hero */}
+      <div className="float-in d1 card" style={{ padding: '28px 32px', marginBottom: 20 }}>
+        <div className="subtitle" style={{ marginBottom: 4 }}>Wallet Balance</div>
+        <div style={{ fontSize: '2.2rem', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+          {fmtCur(account?.balance ?? 0)}
+        </div>
+        <div style={{ display: 'flex', gap: 32, marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--color-av-gray-100)' }}>
+          <div>
+            <div className="stat-lbl">Total Credited</div>
+            <div style={{ fontSize: 14, fontWeight: 600, marginTop: 1 }}>{fmtCur(account?.totalCredited ?? 0)}</div>
           </div>
+          <div>
+            <div className="stat-lbl">Total Debited</div>
+            <div style={{ fontSize: 14, fontWeight: 600, marginTop: 1 }}>{fmtCur(account?.totalDebited ?? 0)}</div>
+          </div>
+        </div>
+      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              { label: 'Total Outstanding', value: fmtCur(stats?.totalDue ?? 0), color: 'var(--color-av-danger)', delay: 'fd-2' },
-              { label: 'Active Suppliers', value: stats?.supplierCount ?? 0, color: 'var(--color-av-text)', delay: 'fd-3' },
-              { label: 'Suppliers With Dues', value: stats?.suppliersWithDue ?? 0, color: 'var(--color-av-text-secondary)', delay: 'fd-4' },
-            ].map(s => (
-              <div key={s.label} className={`glass-card p-4 shine float-in ${s.delay}`}>
-                <p className="label mb-1.5">{s.label}</p>
-                <p className="stat-num text-lg" style={{ color: s.color }}>{s.value}</p>
-              </div>
+      {/* stats row */}
+      <div className="float-in d2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
+        <div className="card" style={{ padding: '18px 22px' }}>
+          <div className="stat-lbl">Outstanding</div>
+          <div className="stat-num" style={{ color: 'var(--color-av-danger)' }}>{fmtCur(stats?.totalDue ?? 0)}</div>
+        </div>
+        <div className="card" style={{ padding: '18px 22px' }}>
+          <div className="stat-lbl">Suppliers</div>
+          <div className="stat-num">{stats?.supplierCount ?? 0}</div>
+        </div>
+        <div className="card" style={{ padding: '18px 22px' }}>
+          <div className="stat-lbl">With Dues</div>
+          <div className="stat-num" style={{ color: 'var(--color-av-accent-muted)' }}>{stats?.suppliersWithDue ?? 0}</div>
+        </div>
+      </div>
+
+      {/* chart + suggestions */}
+      <div className="float-in d3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 24 }}>
+        <div className="card" style={{ padding: '22px 24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ fontSize: 14, fontWeight: 600 }}>Weekly Cash Flow</div>
+            <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--color-av-text-muted)' }}>Last 7 days</span>
+          </div>
+          <svg style={{ width: '100%', height: 120 }} viewBox="0 0 500 150" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--color-av-accent)" stopOpacity="0.08" />
+                <stop offset="100%" stopColor="var(--color-av-accent)" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <line x1="0" y1="37" x2="500" y2="37" stroke="var(--color-av-gray-100)" strokeWidth="1" />
+            <line x1="0" y1="75" x2="500" y2="75" stroke="var(--color-av-gray-100)" strokeWidth="1" />
+            <line x1="0" y1="113" x2="500" y2="113" stroke="var(--color-av-gray-100)" strokeWidth="1" />
+            <path d="M 0 150 L 0 120 Q 75 80 150 100 T 300 45 T 450 70 L 500 60 L 500 150 Z" fill="url(#chartGrad)" />
+            <path d="M 0 120 Q 75 80 150 100 T 300 45 T 450 70 L 500 60" fill="none" stroke="var(--color-av-accent)" strokeWidth="2" strokeLinecap="round" />
+            <circle cx="150" cy="100" r="3" fill="var(--color-av-accent)" stroke="#fff" strokeWidth="2" />
+            <circle cx="300" cy="45" r="3" fill="var(--color-av-accent)" stroke="#fff" strokeWidth="2" />
+            <circle cx="500" cy="60" r="3" fill="var(--color-av-accent)" stroke="#fff" strokeWidth="2" />
+          </svg>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+            {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => (
+              <span key={d} style={{ fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--color-av-text-muted)' }}>{d}</span>
             ))}
           </div>
+        </div>
 
-          <div className="glass-card p-5 float-in fd-3">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="heading text-sm">Cash Flow Analytics</h3>
-                <p className="body-text text-xs">Simulated weekly payout activity</p>
-              </div>
-              <span className="badge badge-low">Live Sync</span>
+        {suggestions && suggestions.suggestedSuppliers.length > 0 ? (
+          <div className="card" style={{ padding: '22px 24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>Auto-Match Suggestions</div>
+              <button className="av-btn av-btn-primary" style={{ fontSize: 11, padding: '5px 12px' }} onClick={() => onNavigate('pay')}>Pay Now</button>
             </div>
-            <div className="relative h-32 w-full">
-              <svg className="w-full h-full" viewBox="0 0 500 150" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-av-accent)" stopOpacity="0.12" />
-                    <stop offset="100%" stopColor="var(--color-av-accent)" stopOpacity="0.00" />
-                  </linearGradient>
-                </defs>
-                <line x1="0" y1="30" x2="500" y2="30" stroke="rgba(0,0,0,0.03)" strokeWidth="1" />
-                <line x1="0" y1="75" x2="500" y2="75" stroke="rgba(0,0,0,0.03)" strokeWidth="1" />
-                <line x1="0" y1="120" x2="500" y2="120" stroke="rgba(0,0,0,0.03)" strokeWidth="1" />
-                <path d="M 0 150 L 0 120 Q 75 80 150 100 T 300 45 T 450 70 L 500 60 L 500 150 Z" fill="url(#chartGrad)" />
-                <path d="M 0 120 Q 75 80 150 100 T 300 45 T 450 70 L 500 60" fill="none" stroke="var(--color-av-accent)" strokeWidth="3" strokeLinecap="round" />
-                <circle cx="150" cy="100" r="4" fill="var(--color-av-accent)" stroke="#fff" strokeWidth="2" />
-                <circle cx="300" cy="45" r="4" fill="var(--color-av-accent)" stroke="#fff" strokeWidth="2" />
-                <circle cx="500" cy="60" r="4" fill="var(--color-av-accent)" stroke="#fff" strokeWidth="2" />
-              </svg>
-            </div>
-            <div className="flex justify-between mt-3 text-[9px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-av-text-muted)' }}>
-              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-            </div>
-          </div>
-
-          {suggestions && suggestions.suggestedSuppliers.length > 0 ? (
-            <div className="glass p-5 glow-ring float-in fd-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-xl" style={{ color: 'var(--color-av-accent)' }}>⚡</span>
-                  <h3 className="heading text-base">Smart Suggestions</h3>
+            <div className="subtitle" style={{ marginBottom: 12 }}>{suggestions.suggestedSuppliers.length} supplier(s) · Balance: {fmtCur(suggestions.balance)}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {suggestions.suggestedSuppliers.slice(0, 5).map(s => (
+                <div key={s._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--color-av-gray-50)', borderRadius: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span className={`badge badge-${s.priority}`}>{s.priority}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600 }}>{s.name}</span>
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 700 }}>{fmtCur(s.suggestedAmount)}</span>
                 </div>
-                <button className="av-btn av-btn-primary text-xs py-1.5 px-3" onClick={() => onNavigate('pay')}>Pay Now →</button>
-              </div>
-              <p className="body-text text-xs mb-4">
-                Based on your balance of {fmtCur(suggestions.balance)}, you can pay {suggestions.suggestedSuppliers.length} supplier(s):
-              </p>
-              <div className="space-y-2">
-                {suggestions.suggestedSuppliers.slice(0, 5).map(s => (
-                  <div key={s._id} className="flex items-center justify-between py-2.5 px-3.5 rounded-xl"
-                    style={{ background: 'var(--color-av-bg)', border: '1px solid var(--color-av-glass-border)' }}>
-                    <div className="flex items-center gap-3">
-                      <span className={`badge badge-${s.priority}`}>{s.priority}</span>
-                      <span className="text-xs font-semibold" style={{ color: 'var(--color-av-text-secondary)' }}>{s.name}</span>
-                    </div>
-                    <span className="text-xs font-bold" style={{ color: 'var(--color-av-text)', fontFamily: 'var(--font-display)' }}>{fmtCur(s.suggestedAmount)}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="flex justify-between mt-4 pt-3.5" style={{ borderTop: '1px solid var(--color-av-glass-border)' }}>
-                <span className="body-text text-xs">Total suggested</span>
-                <span className="text-xs font-bold" style={{ color: 'var(--color-av-accent)', fontFamily: 'var(--font-display)' }}>{fmtCur(suggestions.totalPayout)}</span>
-              </div>
+              ))}
             </div>
-          ) : (
-            <div className="glass p-5 float-in fd-4">
-              <h3 className="heading text-sm mb-3.5 flex items-center gap-2">
-                Getting Started Checklist
-              </h3>
-              <div className="space-y-2.5">
-                {[
-                  { step: '1', title: 'Register Business Account', desc: 'Completed during onboarding process.', done: true },
-                  { step: '2', title: 'Add Suppliers & Bank Profiles', desc: 'Populate your supplier ledger to map account details.', done: stats?.supplierCount ? stats.supplierCount > 0 : false, action: () => onNavigate('suppliers'), actionText: 'Go to Ledger' },
-                  { step: '3', title: 'Simulate Bank Credit', desc: 'Credit your debit wallet to trigger auto-matching.', done: account?.totalCredited ? account.totalCredited > 0 : false, action: () => setShowCredit(true), actionText: 'Credit Wallet' },
-                  { step: '4', title: 'Execute Automated Payouts', desc: 'Approve suggested payout batches using your security PIN.', done: account?.totalDebited ? account.totalDebited > 0 : false, action: () => onNavigate('pay'), actionText: 'Run Payout' }
-                ].map((s, idx) => (
-                  <div key={idx} className="flex gap-3 p-3.5 rounded-xl transition-all" style={{ background: s.done ? 'var(--color-av-accent-bg)' : 'var(--color-av-bg)', border: s.done ? '1px solid var(--color-av-accent-border)' : '1px solid var(--color-av-glass-border)' }}>
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0" style={{
-                      background: s.done ? 'var(--color-av-accent)' : 'rgba(0,0,0,0.05)',
-                      color: s.done ? '#fff' : 'var(--color-av-text-muted)'
-                    }}>
-                      {s.done ? '✓' : s.step}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold truncate" style={{ color: s.done ? 'var(--color-av-text)' : 'var(--color-av-text-secondary)' }}>{s.title}</p>
-                      <p className="body-text text-[11px] mt-0.5 leading-normal">{s.desc}</p>
-                      {!s.done && s.action && (
-                        <button onClick={s.action} className="mt-1 text-[11px] font-bold text-left" style={{ color: 'var(--color-av-accent)' }}>
-                          {s.actionText} →
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-6">
-
-          <div className="glass-card p-5 float-in fd-3">
-            <h3 className="heading text-base mb-4">Quick Actions</h3>
-            <div className="flex flex-col gap-2.5">
-              <button className="av-btn av-btn-primary w-full justify-start py-2.5 shine" onClick={() => setShowCredit(true)}>
-                Credit Wallet
-              </button>
-              <button className="av-btn av-btn-ghost w-full justify-start py-2.5" onClick={() => onNavigate('suppliers')}>
-                + Add New Supplier
-              </button>
-              <button className="av-btn av-btn-ghost w-full justify-start py-2.5" onClick={() => onNavigate('pay')}>
-                Run Batch Payout
-              </button>
-              <button className="av-btn av-btn-ghost w-full justify-start py-2.5" onClick={() => onNavigate('settings')}>
-                Update Security PIN
-              </button>
-              <button className="av-btn av-btn-ghost w-full justify-start py-2.5" style={{ color: 'var(--color-av-accent)', border: '1px solid var(--color-av-accent-border)' }} onClick={handleSeed} disabled={seeding}>
-                {seeding ? 'Seeding...' : 'Load Demo Data'}
-              </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 12, marginTop: 12, borderTop: '1px solid var(--color-av-gray-100)' }}>
+              <span style={{ fontSize: 12, color: 'var(--color-av-text-secondary)' }}>Total Payout</span>
+              <span style={{ fontSize: 13, fontWeight: 700 }}>{fmtCur(suggestions.totalPayout)}</span>
             </div>
           </div>
-
-          <div className="glass-card p-5 float-in fd-4">
-            <div className="flex items-center justify-between mb-3.5">
-              <h3 className="heading text-sm">Security Auditing</h3>
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-av-accent)' }} />
-            </div>
-            <div className="space-y-2 text-[9px] tracking-wide" style={{ color: 'var(--color-av-text-muted)' }}>
-              <div className="p-2 rounded flex items-center justify-between" style={{ background: 'var(--color-av-bg)', border: '1px solid var(--color-av-glass-border)' }}>
-                <span>API Gateway Handshake</span>
-                <span className="font-bold" style={{ color: 'var(--color-av-accent)' }}>VERIFIED</span>
-              </div>
-              <div className="p-2 rounded flex items-center justify-between" style={{ background: 'var(--color-av-bg)', border: '1px solid var(--color-av-glass-border)' }}>
-                <span>Auto-Match Engine</span>
-                <span className="font-bold" style={{ color: 'var(--color-av-accent)' }}>STANDBY</span>
-              </div>
-              <div className="p-2 rounded flex items-center justify-between" style={{ background: 'var(--color-av-bg)', border: '1px solid var(--color-av-glass-border)' }}>
-                <span>Database Sync</span>
-                <span className="font-bold" style={{ color: 'var(--color-av-accent)' }}>ONLINE</span>
-              </div>
-              <div className="p-2 rounded flex items-center justify-between" style={{ background: 'var(--color-av-bg)', border: '1px solid var(--color-av-glass-border)' }}>
-                <span>JWT Encryption Key</span>
-                <span className="font-bold" style={{ color: 'var(--color-av-accent)' }}>SECURED</span>
-              </div>
+        ) : (
+          <div className="card" style={{ padding: '22px 24px' }}>
+            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 14 }}>Getting Started</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {[
+                { step: '1', title: 'Account Registered', done: true },
+                { step: '2', title: 'Add Suppliers', desc: 'Add supplier profiles with bank details', done: stats?.supplierCount ? stats.supplierCount > 0 : false, action: () => onNavigate('suppliers') },
+                { step: '3', title: 'Credit Wallet', desc: 'Add funds to trigger auto-matching', done: account?.totalCredited ? account.totalCredited > 0 : false, action: () => setShowCredit(true) },
+                { step: '4', title: 'Execute Payout', desc: 'Approve and run batch payments', done: account?.totalDebited ? account.totalDebited > 0 : false, action: () => onNavigate('pay') },
+              ].map((s, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: s.done ? 'var(--color-av-gray-50)' : 'var(--color-av-accent-bg)', borderRadius: 8 }}>
+                  <div style={{ width: 20, height: 20, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, flexShrink: 0, background: s.done ? 'var(--color-av-accent)' : 'var(--color-av-gray-200)', color: s.done ? '#fff' : 'var(--color-av-text-muted)' }}>
+                    {s.done ? '✓' : s.step}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: s.done ? 'var(--color-av-text)' : 'var(--color-av-text-secondary)' }}>{s.title}</div>
+                    {!s.done && <div className="subtitle" style={{ fontSize: 10 }}>{s.desc}</div>}
+                  </div>
+                  {!s.done && s.action && (
+                    <button onClick={s.action} style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-av-accent)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Go</button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
-
-          {creditEvents.length > 0 && (
-            <div className="glass-card p-5 float-in fd-5">
-              <h3 className="heading text-sm mb-3.5">Recent Credits</h3>
-              <div className="space-y-2">
-                {creditEvents.map(ev => (
-                  <div key={ev._id} className="flex items-center justify-between py-2.5 px-3.5 rounded-xl" style={{ background: 'var(--color-av-bg)' }}>
-                    <div>
-                      <p className="text-xs font-semibold" style={{ color: 'var(--color-av-text-secondary)' }}>{ev.source}</p>
-                      <p className="text-[9px]" style={{ color: 'var(--color-av-text-muted)' }}>{new Date(ev.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
-                    </div>
-                    <span className="text-xs font-bold" style={{ color: 'var(--color-av-accent)', fontFamily: 'var(--font-display)' }}>+{fmtCur(ev.amount)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-        </div>
-
+        )}
       </div>
 
-      {showCredit && (
-        <div className="modal-overlay" onClick={() => setShowCredit(false)}>
-          <div className="modal-content" style={{ padding: '20px', maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="heading text-lg">Credit Account</h3>
-              <button onClick={() => setShowCredit(false)} style={{ color: 'var(--color-av-text-muted)' }}>✕</button>
+      {/* bottom row: quick actions + recent credits */}
+      <div className="float-in d4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div className="card" style={{ padding: '20px 22px' }}>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 14 }}>Quick Actions</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <button className="av-btn av-btn-primary" style={{ justifyContent: 'flex-start', padding: '10px 14px' }} onClick={() => setShowCredit(true)}>Credit Wallet</button>
+            <button className="av-btn av-btn-ghost" style={{ justifyContent: 'flex-start', padding: '10px 14px' }} onClick={() => onNavigate('suppliers')}>Add Supplier</button>
+            <button className="av-btn av-btn-ghost" style={{ justifyContent: 'flex-start', padding: '10px 14px' }} onClick={() => onNavigate('pay')}>Run Payout</button>
+            <button className="av-btn av-btn-ghost" style={{ justifyContent: 'flex-start', padding: '10px 14px' }} onClick={() => onNavigate('settings')}>Settings</button>
+          </div>
+        </div>
+
+        {creditEvents.length > 0 && (
+          <div className="card" style={{ padding: '20px 22px' }}>
+            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Recent Credits</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {creditEvents.map(ev => (
+                <div key={ev._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--color-av-gray-50)', borderRadius: 8 }}>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 600 }}>{ev.source}</div>
+                    <div className="subtitle" style={{ fontSize: 10 }}>{new Date(ev.createdAt).toLocaleDateString('en-IN')}</div>
+                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-av-success)' }}>+{fmtCur(ev.amount)}</span>
+                </div>
+              ))}
             </div>
-            <p className="body-text text-xs mb-4">Simulate a bank credit to trigger the auto-match engine.</p>
-            <div className="flex flex-wrap gap-1.5 mb-4">
+          </div>
+        )}
+      </div>
+
+      {/* credit modal */}
+      {showCredit && (
+        <div className="modal-wrap" onClick={() => setShowCredit(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div style={{ fontSize: 15, fontWeight: 600 }}>Credit Wallet</div>
+              <button onClick={() => setShowCredit(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-av-text-muted)', fontSize: 14, fontFamily: 'inherit' }}>✕</button>
+            </div>
+            <div className="subtitle" style={{ marginBottom: 16 }}>Simulate a bank credit to your corporate wallet.</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
               {quickAmounts.map(a => (
                 <button key={a} onClick={() => setCreditAmount(a.toString())}
-                  className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all"
                   style={{
-                    background: creditAmount === a.toString() ? 'linear-gradient(135deg, var(--color-av-accent), #4338ca)' : 'var(--color-av-bg)',
+                    padding: '6px 14px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: 'none', fontFamily: 'inherit',
+                    background: creditAmount === a.toString() ? 'var(--color-av-accent)' : 'var(--color-av-gray-100)',
                     color: creditAmount === a.toString() ? '#fff' : 'var(--color-av-text-secondary)',
-                    border: `1px solid ${creditAmount === a.toString() ? 'var(--color-av-accent-border)' : 'var(--color-av-glass-border)'}`,
                   }}>{fmtCur(a)}</button>
               ))}
             </div>
-            <input className="av-input mb-4" type="number" placeholder="Enter amount" value={creditAmount} onChange={e => setCreditAmount(e.target.value)} />
-            <div className="flex justify-between items-center p-3 rounded-xl mb-4" style={{ background: 'var(--color-av-accent-bg)', border: '1px solid var(--color-av-accent-border)' }}>
-              <span className="label">New Balance</span>
-              <span className="text-xs font-bold" style={{ color: 'var(--color-av-accent)', fontFamily: 'var(--font-display)' }}>{fmtCur((account?.balance ?? 0) + (parseInt(creditAmount) || 0))}</span>
+            <input className="av-input" type="number" placeholder="Enter amount" value={creditAmount} onChange={e => setCreditAmount(e.target.value)} style={{ marginBottom: 16 }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'var(--color-av-accent-bg)', borderRadius: 8, marginBottom: 16 }}>
+              <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-av-text-muted)' }}>New Balance</span>
+              <span style={{ fontSize: 13, fontWeight: 700 }}>{fmtCur((account?.balance ?? 0) + (parseInt(creditAmount) || 0))}</span>
             </div>
-            <button className="av-btn av-btn-primary w-full py-2.5" onClick={handleCredit} disabled={crediting || !creditAmount}>
-              {crediting ? <><div className="spinner"></div> Processing...</> : `Credit ${creditAmount ? fmtCur(parseInt(creditAmount)) : '\u20B90'}`}
+            <button className="av-btn av-btn-primary" style={{ width: '100%', padding: '11px 0' }} onClick={handleCredit} disabled={crediting || !creditAmount}>
+              {crediting ? <><div className="spinner"></div> Processing...</> : 'Credit'}
             </button>
           </div>
         </div>
