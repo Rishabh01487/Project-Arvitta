@@ -1,155 +1,141 @@
-'use client'
+'use client';
+import { useState } from 'react';
+import { useAuth } from '@/app/providers';
+import { DashboardView } from './Dashboard';
+import { SuppliersView } from './Suppliers';
+import { PaymentView } from './PaymentCenter';
+import { TransactionsView } from './Transactions';
+import { NotificationsView } from './Notifications';
+import { SettingsView } from './Settings';
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '../providers'
-import { DashboardView } from './Dashboard'
-import { SuppliersView } from './Suppliers'
-import { PaymentView } from './PaymentCenter'
-import { TransactionsView } from './Transactions'
-import { NotificationsView } from './Notifications'
-import { SettingsView } from './Settings'
-
-type View = 'dashboard' | 'suppliers' | 'pay' | 'transactions' | 'notifications' | 'settings'
-
-const NAV: { id: View; icon: string; label: string }[] = [
-  { id: 'dashboard', icon: '\u25C8', label: 'Dashboard' },
-  { id: 'suppliers', icon: '\u25CE', label: 'Suppliers' },
-  { id: 'pay', icon: '\u2B21', label: 'Pay Now' },
-  { id: 'transactions', icon: '\u25C7', label: 'Ledger' },
-  { id: 'notifications', icon: '\u25C9', label: 'Alerts' },
-  { id: 'settings', icon: '\u2699', label: 'Settings' },
-]
+const pages = [
+  { id: 'dashboard', label: 'Dashboard', icon: '◉' },
+  { id: 'suppliers', label: 'Suppliers', icon: '◈' },
+  { id: 'pay', label: 'Pay Now', icon: '◎' },
+  { id: 'transactions', label: 'Transactions', icon: '◇' },
+  { id: 'notifications', label: 'Notifications', icon: '◊' },
+  { id: 'settings', label: 'Settings', icon: '○' },
+];
 
 export function AppShell() {
-  const { business, account, logout, unreadCount, refreshAccount } = useAuth()
-  const [view, setView] = useState<View>('dashboard')
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { business, logout } = useAuth();
+  const [active, setActive] = useState('dashboard');
+  const [collapsed, setCollapsed] = useState(false);
 
-  useEffect(() => { refreshAccount() }, [view, refreshAccount])
-
-  const go = (v: View) => { setView(v); setSidebarOpen(false) }
-  const fmtBal = (n: number) => `\u20B9${n.toLocaleString('en-IN')}`
+  const renderPage = () => {
+    switch (active) {
+      case 'dashboard': return <DashboardView onNavigate={setActive} />;
+      case 'suppliers': return <SuppliersView />;
+      case 'pay': return <PaymentView />;
+      case 'transactions': return <TransactionsView />;
+      case 'notifications': return <NotificationsView />;
+      case 'settings': return <SettingsView />;
+      default: return <DashboardView onNavigate={setActive} />;
+    }
+  };
 
   return (
-    <div className="min-h-screen flex" style={{ position: 'relative', zIndex: 1 }}>
-      <div className="bg-orb-1" />
-      <div className="bg-orb-2" />
-      <div className="bg-orb-3" />
-
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden"
-          style={{ background: 'rgba(0,0,0,0.15)', backdropFilter: 'blur(4px)' }}
-          onClick={() => setSidebarOpen(false)} />
-      )}
-
-      <aside className={`
-        fixed lg:sticky top-0 left-0 h-screen z-50 flex flex-col
-        transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:translate-x-0
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `} style={{
-        width: '240px',
-        background: 'rgba(255, 255, 255, 0.75)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        borderRight: '1px solid var(--color-av-glass-border)',
-        boxShadow: '2px 0 20px rgba(0,0,0,0.04)',
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
+      <aside style={{
+        width: collapsed ? 64 : 220,
+        background: '#14151e',
+        display: 'flex', flexDirection: 'column',
+        transition: 'width 0.2s',
+        position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 50,
       }}>
-        <div className="p-5 pb-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center levitate"
-            style={{
-              background: 'linear-gradient(135deg, var(--color-av-accent), #4338ca)',
-              boxShadow: '0 4px 16px rgba(79, 70, 229, 0.2)',
-            }}>
-            <span style={{ fontSize: '18px', fontFamily: 'var(--font-display)', fontWeight: 800, color: '#fff' }}>A</span>
-          </div>
-          <div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-av-text)' }}>Arvitta</h1>
-            <p className="label mt-0.5" style={{ fontSize: '0.55rem', letterSpacing: '0.12em', color: 'var(--color-av-accent)' }}>Payment Intelligence</p>
-          </div>
-        </div>
-
-        <div className="mx-4 p-4 rounded-xl" style={{
-          background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.04) 0%, rgba(79, 70, 229, 0.02) 100%)',
-          border: '1px solid var(--color-av-accent-border)',
+        {/* logo */}
+        <div style={{
+          padding: collapsed ? '16px 0' : '20px 24px',
+          textAlign: collapsed ? 'center' : 'left',
+          borderBottom: '1px solid rgba(255,255,255,0.06)'
         }}>
-          <p className="label mb-1.5">Available Balance</p>
-          <p className="stat-num text-lg" style={{ color: 'var(--color-av-text)' }}>
-            {fmtBal(account?.balance ?? 0)}
-          </p>
+          {collapsed ? (
+            <div style={{ color: '#fff', fontWeight: 700, fontSize: 16 }}>A</div>
+          ) : (
+            <>
+              <div style={{ color: '#fff', fontWeight: 700, fontSize: 17, letterSpacing: '-0.03em' }}>Arvitta</div>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>Payment Platform</div>
+            </>
+          )}
         </div>
 
-        <nav className="flex-1 mt-4 px-3 space-y-0.5">
-          {NAV.map(item => {
-            const active = view === item.id
+        {/* collapse toggle */}
+        <button onClick={() => setCollapsed(!collapsed)} style={{
+          alignSelf: collapsed ? 'center' : 'flex-end',
+          margin: collapsed ? '10px 0' : '8px 14px',
+          padding: '4px 8px', background: 'rgba(255,255,255,0.06)',
+          border: 'none', borderRadius: 6, color: 'rgba(255,255,255,0.35)',
+          cursor: 'pointer', fontSize: 12, lineHeight: 1, fontFamily: 'inherit',
+        }}>
+          {collapsed ? '▸' : '◂'}
+        </button>
+
+        {/* nav */}
+        <nav style={{
+          flex: 1, padding: collapsed ? '4px 0' : '8px 12px',
+          display: 'flex', flexDirection: 'column', gap: 2,
+        }}>
+          {pages.map(p => {
+            const isActive = active === p.id;
             return (
-              <button key={item.id} onClick={() => go(item.id)}
-                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all relative"
-                style={{
-                  fontFamily: 'var(--font-body)', fontSize: '0.8rem', fontWeight: active ? 700 : 500,
-                  background: active ? 'var(--color-av-accent-bg)' : 'transparent',
-                  color: active ? 'var(--color-av-accent)' : 'var(--color-av-text-secondary)',
-                  borderLeft: active ? '2px solid var(--color-av-accent)' : '2px solid transparent',
-                }}>
-                <span style={{ fontSize: '0.92rem', opacity: active ? 1 : 0.5 }}>{item.icon}</span>
-                {item.label}
-                {item.id === 'notifications' && unreadCount > 0 && (
-                  <span className="ml-auto w-5 h-5 rounded-full text-[9px] font-bold flex items-center justify-center"
-                    style={{ background: 'var(--color-av-accent)', color: '#fff' }}>
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
+              <button key={p.id} onClick={() => setActive(p.id)} style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: collapsed ? '10px 0' : '9px 12px',
+                border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit',
+                background: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
+                color: isActive ? '#fff' : 'rgba(255,255,255,0.5)',
+                fontSize: 13, fontWeight: isActive ? 600 : 400,
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                transition: 'all 0.1s',
+              }}>
+                <span style={{ fontSize: collapsed ? 15 : 13, lineHeight: 1 }}>{p.icon}</span>
+                {!collapsed && <span>{p.label}</span>}
               </button>
-            )
+            );
           })}
         </nav>
 
-        <div className="mx-5 accent-line" />
-
-        <div className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs"
-              style={{
-                background: 'var(--color-av-accent-bg)',
-                border: '1px solid var(--color-av-accent-border)',
-                fontFamily: 'var(--font-display)', fontWeight: 700,
-                color: 'var(--color-av-accent)',
-              }}>
-              {business?.name?.charAt(0) || '?'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--color-av-text)' }} className="truncate">{business?.name}</p>
-              <p className="text-[10px] truncate" style={{ color: 'var(--color-av-text-muted)' }}>{business?.email}</p>
-            </div>
-            <button onClick={logout} className="p-2 rounded-lg" style={{ color: 'var(--color-av-text-muted)' }}
-              onMouseOver={e => (e.currentTarget.style.color = 'var(--color-av-danger)')}
-              onMouseOut={e => (e.currentTarget.style.color = 'var(--color-av-text-muted)')}>✕</button>
+        {/* user */}
+        <div style={{
+          padding: collapsed ? '10px 0' : '12px 16px',
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex', alignItems: 'center', gap: 10,
+          justifyContent: collapsed ? 'center' : 'flex-start',
+        }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: 7,
+            background: 'rgba(255,255,255,0.1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 600,
+          }}>
+            {business?.name?.charAt(0) || '?'}
           </div>
+          {!collapsed && (
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <div style={{
+                color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 500,
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              }}>
+                {business?.name || 'User'}
+              </div>
+              <button onClick={logout} style={{
+                background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)',
+                fontSize: 10, cursor: 'pointer', padding: 0, fontFamily: 'inherit',
+              }}>
+                Sign out
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 
-      <main className="flex-1 min-h-screen relative" style={{ zIndex: 1 }}>
-        <header className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-5 py-4"
-          style={{ background: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--color-av-glass-border)' }}>
-          <button onClick={() => setSidebarOpen(true)} style={{ color: 'var(--color-av-text-secondary)', fontSize: '1.2rem' }}>☰</button>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '0.95rem', color: 'var(--color-av-text)' }}>Arvitta</h1>
-          <button onClick={() => go('notifications')} className="relative">
-            <span style={{ color: 'var(--color-av-text-secondary)' }}>◉</span>
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-2 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center"
-                style={{ background: 'var(--color-av-accent)', color: '#fff' }}>{unreadCount}</span>
-            )}
-          </button>
-        </header>
-
-        <div className="p-6 lg:p-10 max-w-6xl mx-auto float-in" key={view}>
-          {view === 'dashboard' && <DashboardView onNavigate={go as (v: string) => void} />}
-          {view === 'suppliers' && <SuppliersView />}
-          {view === 'pay' && <PaymentView />}
-          {view === 'transactions' && <TransactionsView />}
-          {view === 'notifications' && <NotificationsView />}
-          {view === 'settings' && <SettingsView />}
-        </div>
+      <main style={{
+        marginLeft: collapsed ? 64 : 220,
+        flex: 1, transition: 'margin-left 0.2s',
+        minHeight: '100vh',
+      }}>
+        {renderPage()}
       </main>
     </div>
-  )
+  );
 }
