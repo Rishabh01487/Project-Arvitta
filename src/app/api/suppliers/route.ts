@@ -6,8 +6,9 @@ import { createContact, createFundAccount } from '@/lib/engine/razorpayPayout'
 
 // GET /api/suppliers — list all suppliers with optional filters
 export async function GET(request: NextRequest) {
-  await dbConnect()
   try {
+
+    await dbConnect()
     const businessId = getBusinessIdFromRequest(request)
     if (!businessId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
