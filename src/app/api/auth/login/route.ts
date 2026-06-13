@@ -4,8 +4,8 @@ import PFBusiness from '@/lib/models/PFBusiness'
 import { comparePassword, signToken } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
-  await dbConnect()
   try {
+    await dbConnect()
     const { email, password } = await request.json()
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
