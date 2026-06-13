@@ -5,10 +5,8 @@ import { useAuth } from '../providers'
 
 interface Notif { _id: string; type: string; title: string; message: string; read: boolean; createdAt: string }
 
-const TYPE_ICONS: Record<string, string> = { credit: '💰', payout_complete: '📦', payout_failed: '❌', suggestion: '⚡', system: '🔔' }
-
 export function NotificationsView() {
-  const { authFetch, refreshUnread } = useAuth()
+  const { authFetch, refreshNotifications } = useAuth()
   const [notifs, setNotifs] = useState<Notif[]>([])
   const [unread, setUnread] = useState(0)
 
@@ -23,7 +21,7 @@ export function NotificationsView() {
 
   const markAllRead = async () => {
     await authFetch('/api/notifications', { method: 'PUT' })
-    load(); refreshUnread()
+    load(); refreshNotifications()
   }
 
   return (
@@ -40,7 +38,6 @@ export function NotificationsView() {
 
       {notifs.length === 0 ? (
         <div className="glass p-8 text-center float-in fd-1">
-          <p className="text-3xl mb-2.5" style={{ color: 'var(--color-av-blue-light)' }}>◉</p>
           <p className="body-text text-xs font-semibold">No notifications</p>
         </div>
       ) : (
@@ -48,24 +45,23 @@ export function NotificationsView() {
           {notifs.map((n, i) => (
             <div key={n._id} className={`glass-card p-4 shine float-in fd-${Math.min(i + 1, 4)}`}
               style={{
-                borderColor: !n.read ? 'rgba(56, 189, 248, 0.15)' : undefined,
-                boxShadow: !n.read ? '0 0 16px rgba(56, 189, 248, 0.04)' : undefined,
+                borderColor: !n.read ? 'var(--color-av-accent-border)' : undefined,
               }}>
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(56, 189, 248, 0.04))',
-                    border: '1px solid rgba(56, 189, 248, 0.15)',
+                    background: 'var(--color-av-accent-bg)',
+                    border: '1px solid var(--color-av-accent-border)',
                   }}>
-                  <span className="text-sm">{TYPE_ICONS[n.type] || '🔔'}</span>
+                  <span className="text-sm">{n.type === 'credit' ? '💰' : n.type === 'payout_complete' ? '📦' : n.type === 'payout_failed' ? '❌' : n.type === 'suggestion' ? '⚡' : '🔔'}</span>
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <p className="text-xs font-bold text-white/90">{n.title}</p>
-                    {!n.read && <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-av-blue-light)', boxShadow: '0 0 8px var(--color-av-blue-glow)' }} />}
+                    <p className="text-xs font-bold" style={{ color: 'var(--color-av-text)' }}>{n.title}</p>
+                    {!n.read && <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-av-accent)' }} />}
                   </div>
                   <p className="body-text text-xs">{n.message}</p>
-                  <p className="body-text text-[10px] mt-1.5" style={{ color: 'var(--color-av-gray-dim)' }}>
+                  <p className="body-text text-[10px] mt-1.5" style={{ color: 'var(--color-av-text-muted)' }}>
                     {new Date(n.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
