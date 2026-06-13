@@ -29,7 +29,6 @@ export function SettingsView() {
         <p className="body-text text-xs mt-0.5">Manage your business profile</p>
       </div>
 
-      {/* Business Info */}
       <div className="glass-crystal p-5 mt-5 float-in fd-1">
         <h3 className="heading text-base mb-4">Business Profile</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -43,17 +42,16 @@ export function SettingsView() {
           ].map(item => (
             <div key={item.label}>
               <p className="label mb-1">{item.label}</p>
-              <p className="text-xs font-semibold text-white/80">{item.value}</p>
+              <p className="text-xs font-semibold" style={{ color: 'var(--color-av-text-secondary)' }}>{item.value}</p>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Change PIN */}
       <div className="glass p-5 mt-5 float-in fd-2">
         <h3 className="heading text-base mb-4">Change Transaction PIN</h3>
-        {msg && <div className="p-3 rounded-xl text-xs mb-3 font-semibold" style={{ background: 'rgba(56, 189, 248, 0.08)', color: 'var(--color-av-blue-light)', border: '1px solid rgba(56, 189, 248, 0.2)' }}>{msg}</div>}
-        {err && <div className="p-3 rounded-xl text-xs mb-3 font-semibold" style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'var(--color-av-gray)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>{err}</div>}
+        {msg && <div className="p-3 rounded-xl text-xs mb-3 font-semibold" style={{ background: 'var(--color-av-success-bg)', color: 'var(--color-av-success)', border: '1px solid rgba(5, 150, 105, 0.2)' }}>{msg}</div>}
+        {err && <div className="p-3 rounded-xl text-xs mb-3 font-semibold" style={{ background: 'var(--color-av-danger-bg)', color: 'var(--color-av-danger)', border: '1px solid rgba(220, 38, 38, 0.15)' }}>{err}</div>}
         <form onSubmit={changePin} className="flex flex-col gap-3.5 max-w-xs">
           <div>
             <label className="label block mb-1">Current PIN</label>
