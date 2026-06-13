@@ -45,6 +45,7 @@ interface AuthContextType {
   refreshAccount: () => Promise<void>
   refreshNotifications: () => Promise<void>
   refreshUnread: () => Promise<void>
+  refreshProfile: () => Promise<void>
   authFetch: (url: string, opts?: RequestInit) => Promise<Response>
 }
 
@@ -75,6 +76,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     })
   }, [token])
+
+  const refreshProfile = useCallback(async () => {
+    try {
+      const res = await authFetch('/api/auth/me')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.business) {
+          setBusiness(data.business)
+          setAccount(data.account)
+        }
+      }
+    } catch (e) { console.error('refreshProfile error:', e) }
+  }, [authFetch])
 
   const refreshAccount = useCallback(async () => {
     try {
@@ -215,7 +229,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{
       token, business, account, notifications, unreadCount, isLoading,
-      login, register, demoLogin, logout, refreshAccount, refreshNotifications, refreshUnread, authFetch,
+      login, register, demoLogin, logout, refreshAccount, refreshNotifications, refreshUnread, refreshProfile, authFetch,
     }}>
       {children}
     </AuthContext.Provider>
