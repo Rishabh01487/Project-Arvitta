@@ -10,12 +10,11 @@ export default function HomePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-av-bg)' }}>
-        <div className="bg-grid" />
         <div className="bg-orb-1" /><div className="bg-orb-2" />
         <div className="text-center float-in" style={{ position: 'relative', zIndex: 1 }}>
           <div className="w-12 h-12 mx-auto mb-4 rounded-2xl flex items-center justify-center levitate"
-            style={{ background: 'linear-gradient(135deg, var(--color-av-blue-light), var(--color-av-blue))', boxShadow: '0 6px 24px rgba(56,189,248,0.25)' }}>
-            <span style={{ fontSize: '22px', fontFamily: 'var(--font-display)', fontWeight: 800, color: '#090b11' }}>A</span>
+            style={{ background: 'linear-gradient(135deg, var(--color-av-accent), #4338ca)', boxShadow: '0 6px 24px rgba(79, 70, 229, 0.25)' }}>
+            <span style={{ fontSize: '22px', fontFamily: 'var(--font-display)', fontWeight: 800, color: '#fff' }}>A</span>
           </div>
           <h1 className="heading text-xl gradient-text">Arvitta</h1>
           <p className="body-text text-xs mt-1.5">Loading your workspace...</p>
@@ -47,47 +46,42 @@ function AuthPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative" style={{ background: 'var(--color-av-bg)' }}>
-      <div className="bg-grid" />
       <div className="bg-orb-1" /><div className="bg-orb-2" /><div className="bg-orb-3" />
 
       <div className="w-full max-w-[400px] relative z-10 float-in">
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 levitate"
-            style={{ background: 'linear-gradient(135deg, var(--color-av-blue-light), var(--color-av-blue))', boxShadow: '0 6px 24px rgba(56,189,248,0.25)' }}>
-            <span style={{ fontSize: '24px', fontFamily: 'var(--font-display)', fontWeight: 800, color: '#090b11' }}>A</span>
+            style={{ background: 'linear-gradient(135deg, var(--color-av-accent), #4338ca)', boxShadow: '0 6px 24px rgba(79, 70, 229, 0.25)' }}>
+            <span style={{ fontSize: '24px', fontFamily: 'var(--font-display)', fontWeight: 800, color: '#fff' }}>A</span>
           </div>
           <h1 className="heading text-3xl gradient-text">Arvitta</h1>
-          <p className="body-text text-xs mt-1.5 opacity-80" style={{ fontFamily: 'var(--font-display)' }}>
+          <p className="body-text text-xs mt-1.5">
             Intelligent Payment Orchestration
           </p>
         </div>
 
-        {/* Crystal glass auth card */}
         <div className="glass-crystal p-6 text-center">
-          {demoError && <div className="p-3 rounded-xl text-xs mb-3 font-semibold text-left" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-av-gray)', border: '1px solid rgba(255,255,255,0.1)' }}>{demoError}</div>}
-          
-          {/* Quick Demo Button */}
-          <button type="button" onClick={handleDemo} className="av-btn av-btn-primary w-full py-3 mb-5 shine cursor-pointer" disabled={demoLoading}>
-            {demoLoading ? <><div className="spinner"></div> Seeding workspace...</> : '🚀 Explore with Demo Data'}
+          {demoError && <div className="p-3 rounded-xl text-xs mb-3 font-semibold text-left" style={{ background: 'var(--color-av-danger-bg)', color: 'var(--color-av-danger)', border: '1px solid rgba(220, 38, 38, 0.15)' }}>{demoError}</div>}
+
+          <button type="button" onClick={handleDemo} className="av-btn av-btn-primary w-full py-3 mb-5 shine" disabled={demoLoading}>
+            {demoLoading ? <><div className="spinner"></div> Seeding workspace...</> : 'Explore with Demo Data'}
           </button>
-          
+
           <div className="flex items-center mb-5">
-            <div className="flex-1 h-[1px] bg-white/10" />
-            <span className="px-3 text-[10px] uppercase tracking-wider text-white/30 font-bold">Or Authenticate</span>
-            <div className="flex-1 h-[1px] bg-white/10" />
+            <div className="flex-1 h-[1px]" style={{ background: 'rgba(0,0,0,0.06)' }} />
+            <span className="px-3 text-[10px] uppercase tracking-wider font-bold" style={{ color: 'var(--color-av-text-muted)' }}>Or Authenticate</span>
+            <div className="flex-1 h-[1px]" style={{ background: 'rgba(0,0,0,0.06)' }} />
           </div>
 
-          {/* Tabs */}
-          <div className="flex mb-5 rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex mb-5 rounded-xl overflow-hidden" style={{ background: 'var(--color-av-bg)', border: '1px solid var(--color-av-glass-border)' }}>
             {[{ val: true, label: 'Sign In' }, { val: false, label: 'Register' }].map(t => (
               <button key={t.label} onClick={() => setIsLogin(t.val)}
-                className="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                className="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all"
                 style={{
                   fontFamily: 'var(--font-body)',
-                  background: isLogin === t.val ? 'linear-gradient(135deg, var(--color-av-blue), var(--color-av-blue-deep))' : 'transparent',
-                  color: isLogin === t.val ? '#fff' : 'var(--color-av-gray-dim)',
-                  boxShadow: isLogin === t.val ? '0 4px 20px rgba(35,77,194,0.3)' : 'none',
+                  background: isLogin === t.val ? 'linear-gradient(135deg, var(--color-av-accent), #4338ca)' : 'transparent',
+                  color: isLogin === t.val ? '#fff' : 'var(--color-av-text-muted)',
+                  boxShadow: isLogin === t.val ? '0 4px 20px rgba(79, 70, 229, 0.3)' : 'none',
                 }}>{t.label}</button>
             ))}
           </div>
@@ -115,11 +109,11 @@ function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-left">
-      {error && <div className="p-2.5 rounded-xl text-xs font-semibold" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-av-gray)', border: '1px solid rgba(255,255,255,0.1)' }}>{error}</div>}
+      {error && <div className="p-2.5 rounded-xl text-xs font-semibold" style={{ background: 'var(--color-av-danger-bg)', color: 'var(--color-av-danger)', border: '1px solid rgba(220, 38, 38, 0.15)' }}>{error}</div>}
       <div><label className="label block mb-1.5">Email</label><input type="email" className="av-input py-2 px-3 text-xs" placeholder="you@business.com" value={email} onChange={e => setEmail(e.target.value)} required /></div>
       <div><label className="label block mb-1.5">Password</label><input type="password" className="av-input py-2 px-3 text-xs" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required /></div>
       <button type="submit" className="av-btn av-btn-primary w-full py-2.5 mt-0.5" disabled={loading}>
-        {loading ? <><div className="spinner"></div> Signing in...</> : 'Sign In →'}
+        {loading ? <><div className="spinner"></div> Signing in...</> : 'Sign In \u2192'}
       </button>
     </form>
   )
@@ -143,7 +137,7 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 text-left">
-      {error && <div className="p-2.5 rounded-xl text-xs font-semibold" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-av-gray)', border: '1px solid rgba(255,255,255,0.1)' }}>{error}</div>}
+      {error && <div className="p-2.5 rounded-xl text-xs font-semibold" style={{ background: 'var(--color-av-danger-bg)', color: 'var(--color-av-danger)', border: '1px solid rgba(220, 38, 38, 0.15)' }}>{error}</div>}
       <div className="grid grid-cols-2 gap-2.5">
         <div><label className="label block mb-1">Business Name</label><input className="av-input py-1.5 px-2.5 text-xs" placeholder="Agri Fresh Foods" value={form.name} onChange={e => set('name', e.target.value)} required /></div>
         <div><label className="label block mb-1">Owner</label><input className="av-input py-1.5 px-2.5 text-xs" placeholder="Rajesh Kumar" value={form.ownerName} onChange={e => set('ownerName', e.target.value)} required /></div>
@@ -159,10 +153,10 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
         <div><label className="label block mb-1">GSTIN</label><input className="av-input py-1.5 px-2.5 text-xs" placeholder="Optional" value={form.gstin} onChange={e => set('gstin', e.target.value)} /></div>
       </div>
       <button type="submit" className="av-btn av-btn-primary w-full py-2.5 mt-1" disabled={loading}>
-        {loading ? <><div className="spinner"></div> Creating...</> : 'Create Account →'}
+        {loading ? <><div className="spinner"></div> Creating...</> : 'Create Account \u2192'}
       </button>
-      <p className="text-center text-xs mt-1" style={{ color: 'var(--color-av-gray-dim)' }}>
-        Already have an account? <button type="button" onClick={onSwitch} style={{ color: 'var(--color-av-blue-light)', fontWeight: 700 }}>Sign In</button>
+      <p className="text-center text-xs mt-1" style={{ color: 'var(--color-av-text-secondary)' }}>
+        Already have an account? <button type="button" onClick={onSwitch} style={{ color: 'var(--color-av-accent)', fontWeight: 700 }}>Sign In</button>
       </p>
     </form>
   )
