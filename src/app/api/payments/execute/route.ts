@@ -6,8 +6,9 @@ import { executeBatchPayout, PaymentItem } from '@/lib/engine/batchPayout'
 
 // POST /api/payments/execute — execute batch payment
 export async function POST(request: NextRequest) {
-  await dbConnect()
   try {
+
+    await dbConnect()
     const businessId = getBusinessIdFromRequest(request)
     if (!businessId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
