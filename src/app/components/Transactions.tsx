@@ -25,7 +25,7 @@ export function TransactionsView() {
 
   useEffect(() => { load() }, [load])
 
-  const fmtCur = (n: number) => `₹${(n || 0).toLocaleString('en-IN')}`
+  const fmtCur = (n: number) => `\u20B9${(n || 0).toLocaleString('en-IN')}`
 
   return (
     <div>
@@ -49,7 +49,6 @@ export function TransactionsView() {
 
       {txs.length === 0 ? (
         <div className="glass p-10 text-center float-in fd-2">
-          <p className="text-3xl mb-2.5" style={{ color: 'var(--color-av-blue-light)' }}>◇</p>
           <p className="body-text text-xs font-semibold">No transactions yet</p>
         </div>
       ) : (
@@ -60,13 +59,13 @@ export function TransactionsView() {
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{
-                      background: tx.status === 'completed' ? 'rgba(56,189,248,0.1)' : 'rgba(255,255,255,0.04)',
-                      border: `1px solid ${tx.status === 'completed' ? 'rgba(56,189,248,0.2)' : 'rgba(255,255,255,0.06)'}`,
+                      background: tx.status === 'completed' ? 'var(--color-av-success-bg)' : 'var(--color-av-bg)',
+                      border: `1px solid ${tx.status === 'completed' ? 'rgba(5, 150, 105, 0.2)' : 'var(--color-av-glass-border)'}`,
                     }}>
                     <span>{tx.status === 'completed' ? '✓' : tx.status === 'failed' ? '✕' : '◌'}</span>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-white/90">{tx.supplierName}</p>
+                    <p className="text-xs font-bold" style={{ color: 'var(--color-av-text)' }}>{tx.supplierName}</p>
                     <p className="body-text text-[11px] mt-0.5">
                       {new Date(tx.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                       {tx.utr ? ` · UTR: ${tx.utr}` : ''}
@@ -74,7 +73,7 @@ export function TransactionsView() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs font-bold text-white/90">{fmtCur(tx.amount)}</p>
+                  <p className="text-xs font-bold" style={{ color: 'var(--color-av-text)' }}>{fmtCur(tx.amount)}</p>
                   <div className="flex items-center gap-1.5 mt-1.5 justify-end">
                     <span className={`method-pill method-${tx.method.toLowerCase()}`}>{tx.method}</span>
                     <span className={`badge badge-${tx.status}`}>{tx.status}</span>
