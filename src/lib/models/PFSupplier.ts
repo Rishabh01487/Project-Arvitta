@@ -21,6 +21,8 @@ export interface IPFSupplier extends Document {
     razorpayFundAccountId?: string
   }
   isActive: boolean
+  tdsRate: number
+  gstin: string
   createdAt: Date
   updatedAt: Date
 }
@@ -54,6 +56,8 @@ const PFSupplierSchema = new Schema<IPFSupplier>({
     razorpayFundAccountId: String,
   },
   isActive: { type: Boolean, default: true },
+  tdsRate: { type: Number, default: 1, min: 0, max: 100 }, // default 1% TDS
+  gstin: { type: String, default: '' },
 }, { timestamps: true })
 
 PFSupplierSchema.index({ businessId: 1, priority: 1 })

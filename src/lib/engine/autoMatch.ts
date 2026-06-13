@@ -1,5 +1,6 @@
 import PFSupplier from '@/lib/models/PFSupplier'
 import PFAccount from '@/lib/models/PFAccount'
+import PFBusiness from '@/lib/models/PFBusiness'
 
 export interface MatchedSupplier {
   _id: string
@@ -16,6 +17,11 @@ export interface MatchedSupplier {
     holderName?: string
     upiId?: string
   }
+  isPartial?: boolean
+  originalDue?: number
+  percentagePaid?: number
+  tdsRate?: number
+  gstin?: string
 }
 
 export interface AutoMatchResult {
@@ -25,28 +31,48 @@ export interface AutoMatchResult {
   remainingBalance: number
   totalDueAcrossAll: number
   unpayableCount: number
-}
-
-const PRIORITY_ORDER: Record<string, number> = {
-  critical: 0,
-  high: 1,
-  medium: 2,
-  low: 3,
+  enableFractional: boolean
+  fractionalThreshold: number
 }
 
 /**
  * Auto-match engine: given a business's current balance, find optimal set of suppliers to pay.
  * 
  * Strategy:
- * 1. Sort by priority (critical first), then by oldest unpaid (lastPaidAt ascending)
- * 2. Greedy fit: include supplier if their totalDue fits within remaining balance
- * 3. Return suggestion list with amounts
+ * 1. Read custom priority weights from business settings (critical > high > medium > low by default).
+ * 2. Sort by weight descending (highest weight first), then by oldest unpaid (lastPaidAt ascending).
+ * 3. Greedy fit: include full payment if remaining balance is sufficient.
+ * 4. If full payment is not possible but fractional payouts are enabled, check if the partial
+ *    amount (due * threshold%) can fit in the remaining balance. If yes, suggest the partial amount.
+ * 5. Return suggestions with details.
  */
 export async function runAutoMatch(businessId: string): Promise<AutoMatchResult> {
-  const account = await PFAccount.findOne({ businessId })
+  const [account, business] = await Promise.all([
+    PFAccount.findOne({ businessId }),
+    PFBusiness.findById(businessId),
+  ])
+
   if (!account) throw new Error('Account not found')
+  if (!business) throw new Error('Business not found')
 
   const balance = account.balance
+
+  // Read auto-match settings with fallbacks
+  const settings = business.autoMatchSettings || {
+    priorityWeights: { critical: 100, high: 75, medium: 50, low: 25 },
+    enableFractional: false,
+    fractionalThreshold: 50,
+  }
+
+  const weights: Record<string, number> = settings.priorityWeights || {
+    critical: 100,
+    high: 75,
+    medium: 50,
+    low: 25,
+  }
+
+  const enableFractional = !!settings.enableFractional
+  const fractionalThreshold = settings.fractionalThreshold || 50
 
   // Get all active suppliers with outstanding dues
   const suppliers = await PFSupplier.find({
@@ -55,12 +81,13 @@ export async function runAutoMatch(businessId: string): Promise<AutoMatchResult>
     totalDue: { $gt: 0 },
   }).sort({ lastPaidAt: 1 }) // oldest unpaid first
 
-  // Sort by priority first, then by lastPaidAt (already sorted from DB)
+  // Sort by priority weight descending first, then by lastPaidAt (already sorted from DB)
   const sorted = [...suppliers].sort((a, b) => {
-    const pa = PRIORITY_ORDER[a.priority] ?? 3
-    const pb = PRIORITY_ORDER[b.priority] ?? 3
-    if (pa !== pb) return pa - pb
-    // Within same priority, oldest unpaid first
+    const wa = weights[a.priority] !== undefined ? weights[a.priority] : 50
+    const wb = weights[b.priority] !== undefined ? weights[b.priority] : 50
+    if (wa !== wb) return wb - wa // highest weight first
+    
+    // Within same priority weight, oldest unpaid first
     const aTime = a.lastPaidAt ? a.lastPaidAt.getTime() : 0
     const bTime = b.lastPaidAt ? b.lastPaidAt.getTime() : 0
     return aTime - bTime
@@ -74,6 +101,7 @@ export async function runAutoMatch(businessId: string): Promise<AutoMatchResult>
 
   for (const supplier of sorted) {
     if (supplier.totalDue <= remaining) {
+      // Fit full payment
       suggested.push({
         _id: supplier._id.toString(),
         name: supplier.name,
@@ -89,9 +117,46 @@ export async function runAutoMatch(businessId: string): Promise<AutoMatchResult>
           holderName: supplier.bankDetails?.holderName,
           upiId: supplier.bankDetails?.upiId,
         },
+        isPartial: false,
+        originalDue: supplier.totalDue,
+        percentagePaid: 100,
+        tdsRate: supplier.tdsRate,
+        gstin: supplier.gstin,
       })
       remaining -= supplier.totalDue
       totalPayout += supplier.totalDue
+    } else if (enableFractional) {
+      // Try fractional fit
+      const partialAmount = Math.floor(supplier.totalDue * (fractionalThreshold / 100))
+      
+      // Make sure the fractional amount is at least 1 and fits in remaining balance
+      if (partialAmount >= 1 && partialAmount <= remaining) {
+        suggested.push({
+          _id: supplier._id.toString(),
+          name: supplier.name,
+          phone: supplier.phone,
+          category: supplier.category,
+          priority: supplier.priority,
+          totalDue: supplier.totalDue,
+          suggestedAmount: partialAmount,
+          bankDetails: {
+            accountNumber: supplier.bankDetails?.accountNumber,
+            ifscCode: supplier.bankDetails?.ifscCode,
+            bankName: supplier.bankDetails?.bankName,
+            holderName: supplier.bankDetails?.holderName,
+            upiId: supplier.bankDetails?.upiId,
+          },
+          isPartial: true,
+          originalDue: supplier.totalDue,
+          percentagePaid: fractionalThreshold,
+          tdsRate: supplier.tdsRate,
+          gstin: supplier.gstin,
+        })
+        remaining -= partialAmount
+        totalPayout += partialAmount
+      } else {
+        unpayableCount++
+      }
     } else {
       unpayableCount++
     }
@@ -104,5 +169,7 @@ export async function runAutoMatch(businessId: string): Promise<AutoMatchResult>
     remainingBalance: remaining,
     totalDueAcrossAll,
     unpayableCount,
+    enableFractional,
+    fractionalThreshold,
   }
 }

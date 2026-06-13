@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
         gstin: business.gstin,
         address: business.address,
         bankAccount: business.bankAccount,
+        autoMatchSettings: business.autoMatchSettings,
       },
       account: account ? {
         balance: account.balance,

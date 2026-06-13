@@ -18,6 +18,16 @@ export interface IPFBusiness extends Document {
   }
   razorpayContactId?: string
   razorpayFundAccountId?: string
+  autoMatchSettings?: {
+    priorityWeights: {
+      critical: number
+      high: number
+      medium: number
+      low: number
+    }
+    enableFractional: boolean
+    fractionalThreshold: number
+  }
   createdAt: Date
   updatedAt: Date
 }
@@ -40,6 +50,16 @@ const PFBusinessSchema = new Schema<IPFBusiness>({
   },
   razorpayContactId: String,
   razorpayFundAccountId: String,
+  autoMatchSettings: {
+    priorityWeights: {
+      critical: { type: Number, default: 100 },
+      high: { type: Number, default: 75 },
+      medium: { type: Number, default: 50 },
+      low: { type: Number, default: 25 },
+    },
+    enableFractional: { type: Boolean, default: false },
+    fractionalThreshold: { type: Number, default: 50 },
+  },
 }, { timestamps: true })
 
 export default mongoose.models.PFBusiness || mongoose.model<IPFBusiness>('PFBusiness', PFBusinessSchema)
