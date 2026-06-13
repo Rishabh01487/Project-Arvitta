@@ -8,6 +8,8 @@ interface Business {
   ownerName: string
   email: string
   phone: string
+  address?: string
+  gstin?: string
 }
 
 interface Account {
@@ -42,6 +44,7 @@ interface AuthContextType {
   logout: () => void
   refreshAccount: () => Promise<void>
   refreshNotifications: () => Promise<void>
+  refreshUnread: () => Promise<void>
   authFetch: (url: string, opts?: RequestInit) => Promise<Response>
 }
 
@@ -94,14 +97,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) { console.error('refreshNotifications error:', e) }
   }, [authFetch])
 
+  const refreshUnread = useCallback(async () => {
+    try {
+      const res = await authFetch('/api/notifications')
+      if (res.ok) {
+        const data = await res.json()
+        setUnreadCount(data.unreadCount)
+      }
+    } catch (e) { console.error('refreshUnread error:', e) }
+  }, [authFetch])
+
   // Init: check for stored token
   useEffect(() => {
     const stored = localStorage.getItem('pf_token')
     if (stored) {
       setToken(stored)
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 5000)
       // Fetch profile
       fetch('/api/auth/me', {
         headers: { Authorization: `Bearer ${stored}` },
+        signal: controller.signal,
       })
         .then(r => r.json())
         .then(data => {
@@ -113,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         })
         .catch(() => localStorage.removeItem('pf_token'))
-        .finally(() => setIsLoading(false))
+        .finally(() => { clearTimeout(timeout); setIsLoading(false) })
     } else {
       setIsLoading(false)
     }
@@ -199,7 +215,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{
       token, business, account, notifications, unreadCount, isLoading,
-      login, register, demoLogin, logout, refreshAccount, refreshNotifications, authFetch,
+      login, register, demoLogin, logout, refreshAccount, refreshNotifications, refreshUnread, authFetch,
     }}>
       {children}
     </AuthContext.Provider>
