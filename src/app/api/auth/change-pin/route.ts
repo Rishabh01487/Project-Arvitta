@@ -4,8 +4,9 @@ import PFBusiness from '@/lib/models/PFBusiness'
 import { getBusinessIdFromRequest, comparePin, hashPin } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
-  await dbConnect()
   try {
+
+    await dbConnect()
     const businessId = getBusinessIdFromRequest(request)
     if (!businessId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
