@@ -25,45 +25,34 @@ export function NotificationsView() {
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-5 float-in">
+    <div className="page-wrap">
+      <div className="float-in" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
-          <h2 className="heading text-2xl">Notifications</h2>
-          <p className="body-text text-xs mt-0.5">
-            {unread > 0 ? `${unread} unread` : 'All caught up'}
-          </p>
+          <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em' }}>Notifications</div>
+          <div className="subtitle" style={{ marginTop: 2 }}>{unread > 0 ? `${unread} unread` : 'All caught up'}</div>
         </div>
-        {unread > 0 && <button className="av-btn av-btn-ghost py-1.5 px-3 text-xs" onClick={markAllRead}>Mark all read</button>}
+        {unread > 0 && <button className="av-btn av-btn-ghost" style={{ fontSize: 11, padding: '5px 12px' }} onClick={markAllRead}>Mark all read</button>}
       </div>
 
       {notifs.length === 0 ? (
-        <div className="glass p-8 text-center float-in fd-1">
-          <p className="body-text text-xs font-semibold">No notifications</p>
+        <div className="card float-in d1" style={{ padding: '48px 0', textAlign: 'center' }}>
+          <div className="subtitle">No notifications</div>
         </div>
       ) : (
-        <div className="space-y-2.5">
-          {notifs.map((n, i) => (
-            <div key={n._id} className={`glass-card p-4 shine float-in fd-${Math.min(i + 1, 4)}`}
-              style={{
-                borderColor: !n.read ? 'var(--color-av-accent-border)' : undefined,
-              }}>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{
-                    background: 'var(--color-av-accent-bg)',
-                    border: '1px solid var(--color-av-accent-border)',
-                  }}>
-                  <span className="text-sm">{n.type === 'credit' ? '💰' : n.type === 'payout_complete' ? '📦' : n.type === 'payout_failed' ? '❌' : n.type === 'suggestion' ? '⚡' : '🔔'}</span>
+        <div className="float-in d1" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {notifs.map(n => (
+            <div key={n._id} className="card" style={{ padding: '14px 18px', borderColor: !n.read ? 'var(--color-av-accent-border)' : undefined }}>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'var(--color-av-accent-bg)' }}>
+                  <span style={{ fontSize: 12 }}>{n.type === 'credit' ? '💰' : n.type === 'payout_complete' ? '📦' : n.type === 'payout_failed' ? '❌' : '🔔'}</span>
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <p className="text-xs font-bold" style={{ color: 'var(--color-av-text)' }}>{n.title}</p>
-                    {!n.read && <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-av-accent)' }} />}
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600 }}>{n.title}</span>
+                    {!n.read && <span style={{ width: 6, height: 6, borderRadius: 3, background: 'var(--color-av-accent)', flexShrink: 0 }} />}
                   </div>
-                  <p className="body-text text-xs">{n.message}</p>
-                  <p className="body-text text-[10px] mt-1.5" style={{ color: 'var(--color-av-text-muted)' }}>
-                    {new Date(n.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                  </p>
+                  <div className="subtitle" style={{ fontSize: 11, marginTop: 2 }}>{n.message}</div>
+                  <div className="subtitle" style={{ fontSize: 10, marginTop: 4 }}>{new Date(n.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
                 </div>
               </div>
             </div>
