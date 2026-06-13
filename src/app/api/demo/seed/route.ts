@@ -8,8 +8,9 @@ import PFNotification from '@/lib/models/PFNotification'
 import PFCreditEvent from '@/lib/models/PFCreditEvent'
 
 export async function POST(request: NextRequest) {
-  await dbConnect()
   try {
+
+    await dbConnect()
     const businessId = getBusinessIdFromRequest(request)
     if (!businessId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
